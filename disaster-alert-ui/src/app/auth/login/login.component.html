@@ -1,0 +1,80 @@
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <div class="logo">▲</div>
+
+    <h1>
+      Disaster Management<br>
+      & Alert System
+    </h1>
+
+    <!-- Animated Icons -->
+    <div class="icon siren">🚨</div>
+    <div class="icon satellite">📡</div>
+    <div class="icon cloud">🌩️</div>
+    <div class="icon globe">🌍</div>
+    <div class="icon phone">📱</div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="card">
+
+      <h2>Login</h2>
+
+      <!-- SOCIAL LOGIN -->
+      <div class="social-buttons">
+
+        <button class="google-btn" (click)="googleLogin()">
+          <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
+          Sign in with Google
+        </button>
+
+        <button class="facebook-btn" (click)="facebookLogin()">
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png">
+          Sign in with Facebook
+        </button>
+
+      </div>
+
+      <div class="divider">OR</div>
+
+      <!-- FORM -->
+      <form (ngSubmit)="login()">
+
+  <input
+    type="email"
+    placeholder="Email Address"
+    [(ngModel)]="loginData.email"
+    name="email"
+    required
+  />
+
+  <input
+    type="password"
+    placeholder="Password"
+    [(ngModel)]="loginData.password"
+    name="password"
+    required
+  />
+
+  <button type="submit" class="action-btn">
+    Login
+  </button>
+
+</form>
+
+      <p>
+        Don't have an account?
+        <a routerLink="/signup">Create Account</a>
+      </p>
+
+    </div>
+
+  </div>
+
+</div>

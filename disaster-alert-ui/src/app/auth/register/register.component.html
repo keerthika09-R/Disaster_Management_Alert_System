@@ -1,0 +1,103 @@
+<div class="page">
+
+  <!-- LEFT SIDE -->
+  <div class="left-panel">
+
+    <h1>Disaster Management<br>& Alert System</h1>
+
+    <!-- Animated Icons -->
+    <div class="icon siren">🚨</div>
+    <div class="icon satellite">📡</div>
+    <div class="icon cloud">🌩️</div>
+    <div class="icon globe">🌍</div>
+    <div class="icon phone">📱</div>
+
+  </div>
+
+
+  <!-- RIGHT SIDE -->
+  <div class="right-panel">
+
+    <div class="card">
+
+      <h2>Create Account</h2>
+
+      <!-- Google / Facebook -->
+      <div class="social-buttons">
+
+        <button
+          type="button"
+          class="google-btn"
+          (click)="googleSignup()"
+        >
+          <img src="https://cdn-icons-png.flaticon.com/512/300/300221.png">
+          Sign up with Google
+        </button>
+
+        <button
+          type="button"
+          class="facebook-btn"
+          (click)="facebookSignup()"
+        >
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png">
+          Sign up with Facebook
+        </button>
+
+      </div>
+
+      <div class="divider">OR</div>
+
+
+      <!-- REGISTER FORM -->
+      <form (ngSubmit)="register()">
+
+        <input
+          type="text"
+          placeholder="Full Name"
+          [(ngModel)]="user.fullName"
+          name="fullName"
+          required
+        />
+
+        <input
+          type="email"
+          placeholder="Email Address"
+          [(ngModel)]="user.email"
+          name="email"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          [(ngModel)]="user.password"
+          name="password"
+          required
+        />
+
+        <button
+          type="submit"
+          class="main-btn"
+        >
+          Create Account
+        </button>
+
+      </form>
+
+
+      <!-- LOGIN LINK -->
+      <p style="margin-top:20px; text-align:center;">
+
+        Already have an account?
+
+        <a routerLink="/login" style="color:#5aa469; font-weight:bold;">
+          Log in
+        </a>
+
+      </p>
+
+    </div>
+
+  </div>
+
+</div>

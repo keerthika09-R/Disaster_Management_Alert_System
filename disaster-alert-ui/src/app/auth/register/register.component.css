@@ -1,0 +1,122 @@
+/* PAGE LAYOUT */
+.page {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  width: 45%;
+  background: #cfe8cf;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.left-panel h2 {
+  color: #2f5d2f;
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+/* ICON CONTAINER */
+.icons {
+  position: relative;
+  height: 80%;
+}
+
+/* COMMON ICON STYLE */
+.icon {
+  position: absolute;
+  font-size: 40px;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* INDIVIDUAL ICON POSITIONS */
+.siren { top: 20%; left: 10%; animation-delay: 0s; }
+.satellite { top: 40%; left: 30%; animation-delay: 1s; }
+.cloud { top: 60%; left: 15%; animation-delay: 2s; }
+.globe { top: 30%; left: 60%; animation-delay: 3s; }
+.phone { top: 55%; left: 70%; animation-delay: 4s; }
+
+/* FLOATING ANIMATION */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0); }
+}
+
+/* RIGHT PANEL */
+.right-panel {
+  width: 55%;
+  padding: 60px;
+  background: #ffffff;
+}
+
+.right-panel h2 {
+  margin-bottom: 20px;
+  color: #2f5d2f;
+}
+
+/* SOCIAL BUTTONS */
+.social-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.social-buttons button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.google { background: #fff; }
+.facebook { background: #eaf1ff; }
+
+/* DIVIDER */
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  color: #888;
+}
+
+/* INPUTS */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* CREATE BUTTON */
+.create-btn {
+  width: 100%;
+  padding: 12px;
+  background: #6ea96e;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.create-btn:hover {
+  background: #5a945a;
+}
+
+/* LOGIN LINK */
+.login-link {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #2f5d2f;
+  font-weight: bold;
+  text-decoration: none;
+}
