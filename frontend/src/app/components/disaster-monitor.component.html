@@ -1,0 +1,321 @@
+<!-- Disaster Monitor Layout: sidebar + main -->
+<div class="monitor-wrap">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sb-brand">
+            <div class="sb-logo">🌍</div>
+            <div class="sb-title">Disaster<span>Monitor</span></div>
+        </div>
+
+        <div class="sb-menu">
+            <div class="sb-label">MONITORING</div>
+            <button class="sb-btn" [class.active]="activeTab==='live-dashboard'" (click)="activeTab='live-dashboard'">
+                <span>📊</span> Live Dashboard
+            </button>
+            <button class="sb-btn" *ngIf="userRole==='ADMIN'" [class.active]="activeTab==='pending-review'"
+                (click)="activeTab='pending-review'">
+                <span>⏳</span> Pending Review
+                <span *ngIf="pendingEvents.length" class="sb-badge">{{ pendingEvents.length }}</span>
+            </button>
+            <button class="sb-btn" *ngIf="userRole==='ADMIN'" [class.active]="activeTab==='all-events'"
+                (click)="activeTab='all-events'">
+                <span>📋</span> All Events
+            </button>
+
+            <div class="sb-label" *ngIf="userRole==='ADMIN'">ACTIONS</div>
+            <button class="sb-btn" *ngIf="userRole==='ADMIN'" [class.active]="activeTab==='create-event'"
+                (click)="activeTab='create-event'">
+                <span>➕</span> Create Event
+            </button>
+
+            <div class="sb-label">ACCOUNT</div>
+            <button class="sb-btn" [class.active]="activeTab==='profile'" (click)="activeTab='profile'">
+                <span>👤</span> Profile
+            </button>
+        </div>
+
+        <div class="sb-footer">
+            <div class="sb-user">
+                <div class="sb-avatar">{{ userEmail.charAt(0).toUpperCase() }}</div>
+                <div>
+                    <div class="sb-name">{{ myProfile.fullName || userEmail }}</div>
+                    <div class="sb-role">{{ userRole }}</div>
+                </div>
+            </div>
+            <button class="sb-logout" (click)="logout()">⏻ Sign Out</button>
+            <button class="sb-back" (click)="goToDashboard()">← Back to Dashboard</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Header -->
+        <div class="main-header">
+            <div>
+                <h1 class="mh-title">{{ getPageTitle() }}</h1>
+                <p class="mh-sub">{{ getPageSubtitle() }}</p>
+            </div>
+            <button *ngIf="userRole==='ADMIN'" class="sync-btn" (click)="syncApi()" [disabled]="isSyncing">
+                {{ isSyncing ? '⟳ Syncing...' : '⟳ Sync USGS Data' }}
+            </button>
+        </div>
+
+        <div class="main-body">
+            <!-- Status Message -->
+            <div *ngIf="statusMessage" class="toast-bar" [ngClass]="'toast-'+statusType">{{ statusMessage }}</div>
+
+            <!-- ===== LIVE DASHBOARD ===== -->
+            <div *ngIf="activeTab==='live-dashboard'">
+                <!-- Stats -->
+                <div class="m-stats">
+                    <div class="m-stat">
+                        <div class="m-stat-icon" style="background:#dbeafe;">📊</div>
+                        <div>
+                            <div class="m-stat-num">{{ stats.totalEvents || 0 }}</div>
+                            <div class="m-stat-lbl">Total Events</div>
+                        </div>
+                    </div>
+                    <div class="m-stat">
+                        <div class="m-stat-icon" style="background:#fee2e2;">🔴</div>
+                        <div>
+                            <div class="m-stat-num">{{ stats.criticalCount || 0 }}</div>
+                            <div class="m-stat-lbl">Critical</div>
+                        </div>
+                    </div>
+                    <div class="m-stat">
+                        <div class="m-stat-icon" style="background:#fef3c7;">⏳</div>
+                        <div>
+                            <div class="m-stat-num">{{ stats.pendingCount || 0 }}</div>
+                            <div class="m-stat-lbl">Pending</div>
+                        </div>
+                    </div>
+                    <div class="m-stat">
+                        <div class="m-stat-icon" style="background:#d1fae5;">✅</div>
+                        <div>
+                            <div class="m-stat-num">{{ stats.verifiedCount || 0 }}</div>
+                            <div class="m-stat-lbl">Verified</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-row">
+                    <div class="filter-title">🔍 Filter Events</div>
+                    <div class="filter-controls">
+                        <select class="f-ctrl" [(ngModel)]="filterType" (change)="applyFilters()">
+                            <option value="">All Types</option>
+                            <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
+                        </select>
+                        <select class="f-ctrl" [(ngModel)]="filterSeverity" (change)="applyFilters()">
+                            <option value="">All Severity</option>
+                            <option *ngFor="let s of severityLevels" [value]="s">{{ s }}</option>
+                        </select>
+                        <input class="f-ctrl f-input" placeholder="Search by location..." [(ngModel)]="filterLocation"
+                            (input)="applyFilters()" />
+                        <button class="f-clear" (click)="clearFilters()">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Events Grid -->
+                <div *ngIf="filteredEvents.length===0" class="empty-box">
+                    <div class="empty-icon">🛰️</div>
+                    <div class="empty-title">No events found</div>
+                    <div class="empty-desc">Try adjusting your filters or sync data from the USGS API.</div>
+                </div>
+
+                <div class="events-grid">
+                    <div *ngFor="let ev of filteredEvents" class="ev-card" [ngClass]="'border-'+ev.severity">
+                        <div class="ev-top">
+                            <span class="ev-type">{{ getTypeIcon(ev.disasterType) }} {{ ev.disasterType }}</span>
+                            <span class="ev-sev" [ngClass]="'sev-'+ev.severity">{{ ev.severity }}</span>
+                        </div>
+                        <div class="ev-title">{{ ev.title }}</div>
+                        <div class="ev-desc">{{ ev.description }}</div>
+                        <div class="ev-meta">
+                            <span>📍 {{ ev.locationName }}</span>
+                            <span>🕐 {{ formatDate(ev.eventTime) }}</span>
+                        </div>
+                        <div class="ev-source">Source: {{ ev.source }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PENDING REVIEW (Admin) ===== -->
+            <div *ngIf="activeTab==='pending-review'">
+                <div *ngIf="pendingEvents.length===0" class="empty-box">
+                    <div class="empty-icon">✅</div>
+                    <div class="empty-title">No pending alerts</div>
+                    <div class="empty-desc">All incoming alerts have been reviewed.</div>
+                </div>
+
+                <div class="pending-list">
+                    <div *ngFor="let ev of pendingEvents" class="p-card">
+                        <div class="p-left">
+                            <div class="p-icon">{{ getTypeIcon(ev.disasterType) }}</div>
+                            <div>
+                                <div class="p-title">{{ ev.title }}</div>
+                                <div class="p-desc">{{ ev.description }}</div>
+                                <div class="p-meta">
+                                    <span class="ev-sev" [ngClass]="'sev-'+ev.severity">{{ ev.severity }}</span>
+                                    <span>📍 {{ ev.locationName }}</span>
+                                    <span>🕐 {{ formatDate(ev.eventTime) }}</span>
+                                    <span>Source: {{ ev.source }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-actions">
+                            <button class="act-btn act-approve" (click)="approveEvent(ev.id)">✓ Approve</button>
+                            <button class="act-btn act-reject" (click)="rejectEvent(ev.id)">✗ Reject</button>
+                            <button class="act-btn act-edit" (click)="openEditModal(ev)">✎ Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ALL EVENTS (Admin) ===== -->
+            <div *ngIf="activeTab==='all-events'">
+                <div *ngIf="allEvents.length===0" class="empty-box">
+                    <div class="empty-icon">📋</div>
+                    <div class="empty-title">No events</div>
+                </div>
+
+                <div *ngIf="allEvents.length>0" class="table-wrap">
+                    <table class="ev-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th>Severity</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let ev of allEvents">
+                                <td>{{ getTypeIcon(ev.disasterType) }} {{ ev.disasterType }}</td>
+                                <td class="td-title">{{ ev.title }}</td>
+                                <td><span class="ev-sev" [ngClass]="'sev-'+ev.severity">{{ ev.severity }}</span></td>
+                                <td>{{ ev.locationName }}</td>
+                                <td><span class="st-chip" [ngClass]="'st-'+ev.status">{{ ev.status }}</span></td>
+                                <td class="td-date">{{ formatDate(ev.eventTime) }}</td>
+                                <td class="td-actions">
+                                    <button *ngIf="ev.status==='PENDING'" class="sm-act" title="Approve"
+                                        (click)="approveEvent(ev.id)">✓</button>
+                                    <button *ngIf="ev.status==='PENDING'" class="sm-act" title="Reject"
+                                        (click)="rejectEvent(ev.id)">✗</button>
+                                    <button class="sm-act" title="Edit" (click)="openEditModal(ev)">✎</button>
+                                    <button class="sm-act sm-del" title="Delete"
+                                        (click)="deleteEvent(ev.id)">🗑</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== CREATE EVENT (Admin) ===== -->
+            <div *ngIf="activeTab==='create-event'">
+                <div class="create-card">
+                    <h3 class="create-title">Report a Disaster Event</h3>
+                    <div class="create-grid">
+                        <div class="fg">
+                            <label class="fl">Title</label>
+                            <input class="fi" [(ngModel)]="createForm.title" placeholder="Event title" />
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Disaster Type</label>
+                            <select class="fi" [(ngModel)]="createForm.disasterType">
+                                <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
+                            </select>
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Severity</label>
+                            <select class="fi" [(ngModel)]="createForm.severity">
+                                <option *ngFor="let s of severityLevels" [value]="s">{{ s }}</option>
+                            </select>
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Location Name</label>
+                            <input class="fi" [(ngModel)]="createForm.locationName" placeholder="City, Region" />
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Latitude</label>
+                            <input class="fi" type="number" [(ngModel)]="createForm.latitude"
+                                placeholder="e.g. 28.6139" />
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Longitude</label>
+                            <input class="fi" type="number" [(ngModel)]="createForm.longitude"
+                                placeholder="e.g. 77.2090" />
+                        </div>
+                        <div class="fg fg-full">
+                            <label class="fl">Description</label>
+                            <textarea class="fi fi-area" [(ngModel)]="createForm.description"
+                                placeholder="Describe the event..."></textarea>
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-sm" style="margin-top:1.2rem" (click)="submitCreate()">Submit
+                        Event</button>
+                </div>
+            </div>
+
+            <!-- ===== PROFILE ===== -->
+            <div *ngIf="activeTab==='profile'">
+                <div class="create-card">
+                    <h3 class="create-title">My Profile</h3>
+                    <div class="profile-info">
+                        <div class="pi-row"><span class="pi-lbl">Email</span><span class="pi-val">{{ userEmail }}</span>
+                        </div>
+                        <div class="pi-row"><span class="pi-lbl">Role</span><span class="pi-val">{{ userRole }}</span>
+                        </div>
+                        <div class="pi-row"><span class="pi-lbl">Name</span><span class="pi-val">{{ myProfile.fullName
+                                || '-' }}</span></div>
+                        <div class="pi-row"><span class="pi-lbl">Phone</span><span class="pi-val">{{
+                                myProfile.phoneNumber || '-' }}</span></div>
+                        <div class="pi-row"><span class="pi-lbl">Region</span><span class="pi-val">{{ myProfile.region
+                                || '-' }}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Edit Modal -->
+<div *ngIf="showEditModal && editingEvent" class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <h3 class="modal-title">Edit Event</h3>
+        <div class="create-grid">
+            <div class="fg">
+                <label class="fl">Title</label>
+                <input class="fi" [(ngModel)]="editingEvent.title" />
+            </div>
+            <div class="fg">
+                <label class="fl">Type</label>
+                <select class="fi" [(ngModel)]="editingEvent.disasterType">
+                    <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+            <div class="fg">
+                <label class="fl">Severity</label>
+                <select class="fi" [(ngModel)]="editingEvent.severity">
+                    <option *ngFor="let s of severityLevels" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+            <div class="fg">
+                <label class="fl">Location</label>
+                <input class="fi" [(ngModel)]="editingEvent.locationName" />
+            </div>
+            <div class="fg fg-full">
+                <label class="fl">Description</label>
+                <textarea class="fi fi-area" [(ngModel)]="editingEvent.description"></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-outline" (click)="closeEditModal()">Cancel</button>
+            <button class="btn-primary btn-sm" (click)="submitEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>

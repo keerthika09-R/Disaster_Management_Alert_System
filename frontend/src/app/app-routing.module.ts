@@ -3,18 +3,21 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './components/login.component';
 import { RegisterComponent } from './components/register.component';
 import { DashboardComponent } from './components/dashboard.component';
+import { DisasterMonitorComponent } from './components/disaster-monitor.component';
 import { AuthGuard } from './guards/auth.guard';
-import { AdminGuard } from './guards/admin.guard';
-import { ResponderGuard } from './guards/responder.guard';
-import { CitizenGuard } from './guards/citizen.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { 
-    path: 'dashboard', 
+  {
+    path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'disaster-monitor',
+    component: DisasterMonitorComponent,
     canActivate: [AuthGuard]
   },
   { path: '**', redirectTo: '/login' }

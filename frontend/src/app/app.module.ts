@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login.component';
 import { RegisterComponent } from './components/register.component';
 import { DashboardComponent } from './components/dashboard.component';
+import { DisasterMonitorComponent } from './components/disaster-monitor.component';
 
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
@@ -22,7 +23,8 @@ import { CitizenGuard } from './guards/citizen.guard';
     AppComponent,
     LoginComponent,
     RegisterComponent,
-    DashboardComponent
+    DashboardComponent,
+    DisasterMonitorComponent
   ],
   imports: [
     BrowserModule,
