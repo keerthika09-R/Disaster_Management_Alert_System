@@ -13,7 +13,11 @@ public class UserProfile {
 
     private String phoneNumber;
 
-    private String region; // location / area
+    private String region; 
+
+    @Column(name = "profile_image")
+    private String profileImage;
+
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -70,4 +74,13 @@ public class UserProfile {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public String getProfileImage() {
+    return profileImage;
+}
+
+public void setProfileImage(String profileImage) {
+    this.profileImage = profileImage;
+}
+
 }

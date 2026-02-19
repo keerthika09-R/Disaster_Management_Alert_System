@@ -24,63 +24,87 @@ public class AuthService {
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
                        JwtUtil jwtUtil) {
+
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
     }
 
-    // REGISTER
+
+    // =====================================================
+    // REGISTER USER
+    // =====================================================
     public User register(RegisterRequest request) {
-        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new RuntimeException("Email is required");
-        }
-        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            throw new RuntimeException("Password is required");
-        }
-        if (request.getRole() == null || request.getRole().trim().isEmpty()) {
-            throw new RuntimeException("Role is required");
-        }
 
-        if (userService.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        String normalizedRole = request.getRole().toUpperCase();
-        if (!normalizedRole.equals("ADMIN") && !normalizedRole.equals("RESPONDER") && !normalizedRole.equals("CITIZEN")) {
-            throw new RuntimeException("Invalid role. Must be ADMIN, RESPONDER, or CITIZEN");
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail().trim());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(normalizedRole);
-
-        return userService.saveUser(user);
+    if (userService.existsByEmail(request.getEmail())) {
+        throw new RuntimeException("Email already exists");
     }
 
-    // LOGIN
+    String normalizedRole = request.getRole().toUpperCase();
+
+    User user = new User();
+
+    user.setFullName(request.getFullName());   // FIXED
+
+    user.setEmail(request.getEmail());
+
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+    user.setRole(normalizedRole);
+
+    return userService.saveUser(user);
+}
+
+
+
+
+    // =====================================================
+    // LOGIN USER
+    // =====================================================
     public JwtResponse login(LoginRequest request) {
+
+        System.out.println("=== LOGIN REQUEST RECEIVED ===");
+        System.out.println("Email: " + request.getEmail());
+
+
+        // Validate email
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
             throw new RuntimeException("Email is required");
         }
+
+        // Validate password
         if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
             throw new RuntimeException("Password is required");
         }
 
-        Authentication authentication =
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    request.getEmail().trim(),
-                    request.getPassword()
-                )
-            );
 
+        // Authenticate user
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getEmail().trim(),
+                                request.getPassword()
+                        )
+                );
+
+
+        // Fetch user from DB
         User user = userService.findByEmail(request.getEmail().trim())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
+        // Generate JWT token
+        String token = jwtUtil.generateToken(
+                user.getEmail(),
+                user.getRole()
+        );
+
+
+        System.out.println("LOGIN SUCCESSFUL: " + user.getEmail());
+
+
+        // Return response
         return new JwtResponse(token, user.getRole());
     }
 }

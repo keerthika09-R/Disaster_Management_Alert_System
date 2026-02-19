@@ -1,0 +1,420 @@
+/* MAIN WRAPPER */
+
+.auth-wrapper {
+
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+
+}
+
+
+/* LEFT SIDE */
+
+.auth-left {
+
+  flex: 1;
+
+  background: linear-gradient(135deg,#dff3df,#a5d6a7);
+
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.brand h1 {
+
+  font-size: 32px;
+  color: #1b5e20;
+  text-align: center;
+
+}
+
+.brand p {
+
+  text-align: center;
+  color: #2e7d32;
+
+}
+
+
+/* ICON POSITIONING */
+
+.illustrations {
+
+  position: relative;
+  width: 300px;
+  height: 300px;
+
+}
+
+.icon {
+
+  position: absolute;
+  width: 80px;
+
+}
+
+.earth {
+
+  left: 20px;
+  top: 50px;
+
+}
+
+.satellite {
+
+  right: 10px;
+  top: 20px;
+
+}
+
+.alert {
+
+  bottom: 10px;
+  left: 100px;
+
+}
+
+
+/* RIGHT SIDE */
+
+.auth-right {
+
+  flex: 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: #f5f5f5;
+
+}
+
+
+/* CARD */
+
+.auth-card {
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 12px;
+
+  width: 400px;
+
+  box-shadow: 0px 10px 25px rgba(0,0,0,0.1);
+
+}
+
+.auth-card h2 {
+
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2e7d32;
+
+}
+
+
+/* SOCIAL BUTTONS */
+
+.social-row {
+
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+
+}
+
+.social-btn {
+
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  padding: 10px;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  background: white;
+
+  cursor: pointer;
+
+}
+
+.social-btn img {
+
+  width: 20px;
+
+}
+
+.social-btn:hover {
+
+  background: #f1f1f1;
+
+}
+
+
+/* DIVIDER */
+
+.divider {
+
+  text-align: center;
+  margin: 15px 0;
+  color: gray;
+
+}
+
+
+/* INPUT */
+
+input, select {
+
+  width: 100%;
+
+  padding: 12px;
+
+  margin-bottom: 12px;
+
+  border: 1px solid #ccc;
+
+  border-radius: 6px;
+
+  font-size: 14px;
+
+}
+
+
+/* CREATE BUTTON */
+
+.create-btn {
+
+  width: 100%;
+
+  padding: 12px;
+
+  background: #2e7d32;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 6px;
+
+  font-size: 16px;
+
+  cursor: pointer;
+
+}
+
+.create-btn:hover {
+
+  background: #1b5e20;
+
+}
+
+
+/* LOGIN LINK */
+
+.login-link {
+
+  text-align: center;
+  margin-top: 15px;
+
+}
+
+.login-link a {
+
+  color: #2e7d32;
+  text-decoration: none;
+
+}
+.icon {
+
+  position: absolute;
+
+  font-size: 60px;
+
+  color: #2e7d32;
+
+}
+
+.social-btn i {
+
+  font-size: 18px;
+
+}
+
+.fa-google {
+
+  color: #DB4437;
+
+}
+
+.fa-facebook {
+
+  color: #4267B2;
+
+}
+.auth-left {
+
+  flex: 1;
+
+  background: linear-gradient(135deg,#e8f5e9,#a5d6a7);
+
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  overflow: hidden;
+
+}
+
+
+/* MAIN CONTENT */
+
+.left-content {
+
+  text-align: center;
+
+  z-index: 2;
+
+}
+
+.main-logo {
+
+  font-size: 60px;
+
+  color: #2e7d32;
+
+  margin-bottom: 20px;
+
+}
+
+.subtitle {
+
+  color: #1b5e20;
+
+}
+
+
+/* FLOATING ICONS */
+
+/* FLOATING ICON BASE */
+
+.floating {
+
+  position: absolute;
+
+  font-size: 80px;   /* increased size */
+
+  color: rgba(46,125,50,0.75);
+
+  animation: floatAnimation 6s ease-in-out infinite;
+
+}
+.icon1 {
+
+  top: 20%;
+  left: 20%;
+
+}
+
+.icon2 {
+
+  top: 25%;
+  right: 20%;
+
+}
+
+.icon3 {
+
+  bottom: 20%;
+  left: 30%;
+
+}
+
+.icon4 {
+
+  bottom: 25%;
+  right: 25%;
+
+}
+
+
+/* BACKGROUND SHAPES */
+
+.bg-shape {
+
+  position: absolute;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.3);
+
+}
+
+.shape1 {
+
+  width: 300px;
+  height: 300px;
+
+  top: -100px;
+  left: -100px;
+
+}
+
+.shape2 {
+
+  width: 200px;
+  height: 200px;
+
+  bottom: -50px;
+  right: -50px;
+
+}
+
+.shape3 {
+
+  width: 150px;
+  height: 150px;
+
+  top: 50%;
+  left: -50px;
+
+}
+@keyframes floatAnimation {
+
+  0% {
+
+    transform: translateY(0px);
+
+  }
+
+  50% {
+
+    transform: translateY(-20px);
+
+  }
+
+  100% {
+
+    transform: translateY(0px);
+
+  }
+
+}

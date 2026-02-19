@@ -10,6 +10,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -17,25 +20,29 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role; // ADMIN, RESPONDER, CITIZEN
+    private String role;
 
-    // Constructors
-    public User() {
-    }
 
-    public User(String email, String password, String role) {
+    public User() {}
+
+    public User(String fullName, String email, String password, String role) {
+        this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.role = role;
     }
 
-    // Getters and Setters
+
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getEmail() {

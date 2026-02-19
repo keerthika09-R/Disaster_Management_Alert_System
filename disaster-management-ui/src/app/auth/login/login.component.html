@@ -1,0 +1,112 @@
+<div class="auth-wrapper">
+
+  <!-- LEFT PANEL (same as register) -->
+  <div class="auth-left">
+
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
+    <div class="bg-shape shape3"></div>
+
+    <div class="left-content">
+
+      <i class="fas fa-shield-halved main-logo"></i>
+
+      <h1>Disaster Management & Alert System</h1>
+
+      <p class="subtitle">
+
+        Monitoring disasters. Saving lives. Coordinating response.
+
+      </p>
+
+    </div>
+
+    <i class="fas fa-globe floating icon1"></i>
+    <i class="fas fa-satellite floating icon2"></i>
+    <i class="fas fa-triangle-exclamation floating icon3"></i>
+    <i class="fas fa-tower-broadcast floating icon4"></i>
+
+  </div>
+
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right">
+
+    <div class="auth-card">
+
+      <h2>Login to Your Account</h2>
+
+      <div *ngIf="message"
+     [ngClass]="isError ? 'error-msg' : 'success-msg'">
+
+  {{ message }}
+
+</div>
+
+
+
+      <!-- SOCIAL LOGIN -->
+      <div class="social-row">
+
+        <button class="social-btn">
+
+          <i class="fab fa-google"></i>
+
+          Login with Google
+
+        </button>
+
+        <button class="social-btn">
+
+          <i class="fab fa-facebook"></i>
+
+          Login with Facebook
+
+        </button>
+
+      </div>
+
+
+      <div class="divider">
+
+        OR
+
+      </div>
+
+
+      <!-- EMAIL -->
+      <input
+        type="email"
+        placeholder="Email Address"
+        [(ngModel)]="loginData.email"
+      >
+
+
+      <!-- PASSWORD -->
+      <input
+        type="password"
+        placeholder="Password"
+        [(ngModel)]="loginData.password"
+      >
+
+
+      <!-- LOGIN BUTTON -->
+      <button class="create-btn" (click)="login()">
+
+        Login
+
+      </button>
+
+
+      <p class="login-link">
+  Don't have an account?
+  <a routerLink="/register">Create Account</a>
+</p>
+
+
+
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,126 @@
+<div class="auth-wrapper">
+
+  <div class="auth-left">
+
+  <!-- BACKGROUND DECORATION -->
+  <div class="bg-shape shape1"></div>
+  <div class="bg-shape shape2"></div>
+  <div class="bg-shape shape3"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="left-content">
+
+    <i class="fas fa-shield-halved main-logo"></i>
+
+    <h1>Disaster Management & Alert System</h1>
+
+    <p class="subtitle">
+      Monitoring disasters. Saving lives. Coordinating response.
+    </p>
+
+  </div>
+
+  <!-- FLOATING ICONS -->
+  <i class="fas fa-globe floating icon1"></i>
+  <i class="fas fa-satellite floating icon2"></i>
+  <i class="fas fa-triangle-exclamation floating icon3"></i>
+  <i class="fas fa-tower-broadcast floating icon4"></i>
+
+</div>
+
+
+
+  <!-- RIGHT SIDE -->
+  <div class="auth-right">
+
+    <div class="auth-card">
+
+      <h2>Create Your Account</h2>
+
+      <div *ngIf="message"
+     [ngClass]="isError ? 'error-msg' : 'success-msg'">
+
+  {{ message }}
+
+</div>
+
+
+      <!-- SOCIAL BUTTONS -->
+      <div class="social-row">
+
+        <button class="social-btn">
+
+          <i class="fab fa-google"></i>
+
+
+          Sign up with Google
+
+        </button>
+
+        <button class="social-btn">
+
+          <i class="fab fa-facebook"></i>
+
+
+          Sign up with Facebook
+
+        </button>
+
+      </div>
+
+      <div class="divider">
+
+        <span>OR</span>
+
+      </div>
+
+
+      <!-- FORM -->
+      <input
+        type="text"
+        placeholder="Full Name"
+        [(ngModel)]="registerData.fullName"
+      >
+
+      <input
+        type="email"
+        placeholder="Email Address"
+        [(ngModel)]="registerData.email"
+      >
+
+      <input
+        type="password"
+        placeholder="Password"
+        [(ngModel)]="registerData.password"
+      >
+
+      <select [(ngModel)]="registerData.role">
+
+  <option value="">Select Role</option>
+
+  <option value="CITIZEN">Citizen</option>
+
+  <option value="RESPONDER">Responder</option>
+
+  <option value="ADMIN">Admin</option>
+
+</select>
+
+
+      <button class="create-btn" (click)="register()">
+
+        Create Account
+
+      </button>
+
+      <p class="login-link">
+  Already have an account?
+  <a routerLink="/login">Log in</a>
+</p>
+
+
+    </div>
+
+  </div>
+
+</div>

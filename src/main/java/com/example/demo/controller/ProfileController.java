@@ -1,108 +1,62 @@
 package com.example.demo.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import com.example.demo.Entity.User;
+import com.example.demo.Entity.UserProfile;
+import com.example.demo.dto.ProfileResponse;
+import com.example.demo.service.UserProfileService;
+import com.example.demo.service.UserService;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.dto.ProfileRequest;
-import com.example.demo.Entity.User;
-import com.example.demo.Entity.UserProfile;
-import com.example.demo.service.ProfileService;
-import com.example.demo.service.UserService;
-
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/profile")
+@CrossOrigin(origins = "*")
 public class ProfileController {
 
-    private final ProfileService profileService;
     private final UserService userService;
+    private final UserProfileService profileService;
 
-    public ProfileController(ProfileService profileService,
-                             UserService userService) {
-        this.profileService = profileService;
+    public ProfileController(UserService userService,
+                             UserProfileService profileService) {
+
         this.userService = userService;
+        this.profileService = profileService;
     }
 
-    @PostMapping("/create")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserProfile> createProfile(
+
+    // GET PROFILE
+    @GetMapping
+    public ProfileResponse getProfile(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        User user = userService.findByEmail(email).orElseThrow();
+
+        UserProfile profile = profileService.getProfile(user);
+
+        return new ProfileResponse(
+                profile.getFullName(),
+                profile.getPhoneNumber(),
+                profile.getRegion(),
+                profile.getProfileImage(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
+
+
+    // UPDATE PROFILE
+    @PutMapping
+    public UserProfile updateProfile(
             Authentication authentication,
-            @RequestBody ProfileRequest request) {
+            @RequestBody UserProfile updatedProfile) {
 
-        String userEmail = authentication.getName();
-        User user = userService.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String email = authentication.getName();
 
-        UserProfile profile = new UserProfile();
-        profile.setFullName(request.getFullName());
-        profile.setPhoneNumber(request.getPhoneNumber());
-        profile.setRegion(request.getRegion());
-        profile.setUser(user);
+        User user = userService.findByEmail(email).orElseThrow();
 
-        return ResponseEntity.ok(profileService.saveProfile(profile));
+        return profileService.updateProfile(user, updatedProfile);
     }
 
-    @GetMapping("/my")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserProfile> getMyProfile(Authentication authentication) {
-        String userEmail = authentication.getName();
-        User user = userService.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return ResponseEntity.ok(profileService.getProfileByUser(user)
-                .orElseThrow(() -> new RuntimeException("Profile not found")));
-    }
-
-    @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserProfile> getUserProfile(@PathVariable Long userId) {
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return ResponseEntity.ok(profileService.getProfileByUser(user)
-                .orElseThrow(() -> new RuntimeException("Profile not found")));
-    }
-
-    @GetMapping("/region/{region}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserProfile>> getProfilesByRegion(@PathVariable String region) {
-        return ResponseEntity.ok(profileService.getProfilesByRegion(region));
-    }
-
-    @PutMapping("/update")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserProfile> updateProfile(
-            Authentication authentication,
-            @RequestBody ProfileRequest request) {
-
-        String userEmail = authentication.getName();
-        User user = userService.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        UserProfile profile = profileService.getProfileByUser(user)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-
-        profile.setFullName(request.getFullName());
-        profile.setPhoneNumber(request.getPhoneNumber());
-        profile.setRegion(request.getRegion());
-
-        return ResponseEntity.ok(profileService.saveProfile(profile));
-    }
-
-    @DeleteMapping("/delete")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> deleteProfile(Authentication authentication) {
-        String userEmail = authentication.getName();
-        User user = userService.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        UserProfile profile = profileService.getProfileByUser(user)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-
-        profileService.deleteProfile(profile.getId());
-        return ResponseEntity.ok("Profile deleted successfully");
-    }
 }

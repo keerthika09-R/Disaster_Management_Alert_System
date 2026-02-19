@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+:root {
+
+  --primary-green: #8FBC8F;        /* Pastel Green */
+  --secondary-green: #A8D5BA;
+  --light-green: #E8F5E9;
+  --dark-green: #2F4F4F;
+
+  --white: #ffffff;
+  --gray: #6c757d;
+
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background-color: var(--light-green);
+}

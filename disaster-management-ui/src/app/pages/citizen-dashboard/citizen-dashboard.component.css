@@ -1,0 +1,39 @@
+.dashboard-container {
+
+  height: calc(100vh - 60px);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background: linear-gradient(to right, #e8f5e9, #c8e6c9);
+
+}
+
+.dashboard-card {
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+
+  text-align: center;
+
+}
+
+.footer {
+
+  text-align: center;
+
+  padding: 12px;
+
+  background: #2e7d32;
+
+  color: white;
+
+}
