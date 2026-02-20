@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findByRegion(String region);
+
+    List<Alert> findByCountryAndStateOrderByCreatedAtDesc(String country, String state);
+
+    List<Alert> findAllByOrderByCreatedAtDesc();
 }

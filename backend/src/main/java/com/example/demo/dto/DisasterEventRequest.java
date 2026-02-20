@@ -8,6 +8,9 @@ public class DisasterEventRequest {
     private Double latitude;
     private Double longitude;
     private String locationName;
+    private String country;
+    private String state;
+    private String city;
     private String source;
 
     public DisasterEventRequest() {
@@ -67,6 +70,30 @@ public class DisasterEventRequest {
 
     public void setLocationName(String locationName) {
         this.locationName = locationName;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getSource() {

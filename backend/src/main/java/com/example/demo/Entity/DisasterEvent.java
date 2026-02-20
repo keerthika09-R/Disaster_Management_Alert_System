@@ -31,8 +31,12 @@ public class DisasterEvent {
     @Column(nullable = false)
     private String locationName;
 
+    private String country;
+    private String state;
+    private String city;
+
     @Column(nullable = false)
-    private String source;
+    private String source; // USGS, OPENWEATHER, MANUAL
 
     private LocalDateTime eventTime;
 
@@ -47,25 +51,9 @@ public class DisasterEvent {
     private String approvedBy;
     private LocalDateTime approvedAt;
 
-    // Constructors
     public DisasterEvent() {
         this.createdAt = LocalDateTime.now();
         this.status = EventStatus.PENDING;
-    }
-
-    public DisasterEvent(String title, String description, DisasterType disasterType,
-            SeverityLevel severity, Double latitude, Double longitude,
-            String locationName, String source, LocalDateTime eventTime) {
-        this();
-        this.title = title;
-        this.description = description;
-        this.disasterType = disasterType;
-        this.severity = severity;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.locationName = locationName;
-        this.source = source;
-        this.eventTime = eventTime;
     }
 
     // Getters and Setters
@@ -131,6 +119,30 @@ public class DisasterEvent {
 
     public void setLocationName(String locationName) {
         this.locationName = locationName;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getSource() {

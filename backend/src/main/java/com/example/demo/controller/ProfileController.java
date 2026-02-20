@@ -12,6 +12,7 @@ import com.example.demo.service.ProfileService;
 import com.example.demo.service.UserService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -20,8 +21,7 @@ public class ProfileController {
         private final ProfileService profileService;
         private final UserService userService;
 
-        public ProfileController(ProfileService profileService,
-                        UserService userService) {
+        public ProfileController(ProfileService profileService, UserService userService) {
                 this.profileService = profileService;
                 this.userService = userService;
         }
@@ -39,6 +39,9 @@ public class ProfileController {
                 UserProfile profile = new UserProfile();
                 profile.setFullName(request.getFullName());
                 profile.setPhoneNumber(request.getPhoneNumber());
+                profile.setCountry(request.getCountry());
+                profile.setState(request.getState());
+                profile.setCity(request.getCity());
                 profile.setRegion(request.getRegion());
                 profile.setUser(user);
 
@@ -81,8 +84,7 @@ public class ProfileController {
         @GetMapping("/role/{role}/region/{region}")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<List<UserProfile>> getProfilesByRoleAndRegion(
-                        @PathVariable String role,
-                        @PathVariable String region) {
+                        @PathVariable String role, @PathVariable String region) {
                 return ResponseEntity.ok(profileService.getProfilesByRoleAndRegion(role, region));
         }
 
@@ -99,9 +101,45 @@ public class ProfileController {
                 UserProfile profile = profileService.getProfileByUser(user)
                                 .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-                profile.setFullName(request.getFullName());
-                profile.setPhoneNumber(request.getPhoneNumber());
-                profile.setRegion(request.getRegion());
+                if (request.getFullName() != null)
+                        profile.setFullName(request.getFullName());
+                if (request.getPhoneNumber() != null)
+                        profile.setPhoneNumber(request.getPhoneNumber());
+                if (request.getCountry() != null)
+                        profile.setCountry(request.getCountry());
+                if (request.getState() != null)
+                        profile.setState(request.getState());
+                if (request.getCity() != null)
+                        profile.setCity(request.getCity());
+                if (request.getRegion() != null)
+                        profile.setRegion(request.getRegion());
+
+                return ResponseEntity.ok(profileService.saveProfile(profile));
+        }
+
+        /**
+         * Admin: Update a specific user's profile (for responder region assignment)
+         */
+        @PutMapping("/admin/update/{userId}")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<UserProfile> adminUpdateProfile(
+                        @PathVariable Long userId,
+                        @RequestBody ProfileRequest request) {
+
+                User user = userService.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
+                UserProfile profile = profileService.getProfileByUser(user)
+                                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+                if (request.getCountry() != null)
+                        profile.setCountry(request.getCountry());
+                if (request.getState() != null)
+                        profile.setState(request.getState());
+                if (request.getCity() != null)
+                        profile.setCity(request.getCity());
+                if (request.getRegion() != null)
+                        profile.setRegion(request.getRegion());
 
                 return ResponseEntity.ok(profileService.saveProfile(profile));
         }

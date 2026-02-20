@@ -7,7 +7,11 @@ public class RegisterRequest {
     private String role; // ADMIN / RESPONDER / CITIZEN
     private String fullName;
     private String phoneNumber;
+    private String country;
+    private String state;
+    private String city;
     private String region;
+    private String secretKey;
 
     public String getEmail() {
         return email;
@@ -49,6 +53,30 @@ public class RegisterRequest {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     public String getRegion() {
         return region;
     }
@@ -56,8 +84,6 @@ public class RegisterRequest {
     public void setRegion(String region) {
         this.region = region;
     }
-
-    private String secretKey;
 
     public String getSecretKey() {
         return secretKey;

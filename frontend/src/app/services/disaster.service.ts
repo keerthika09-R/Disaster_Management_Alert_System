@@ -11,6 +11,9 @@ export interface DisasterEvent {
     latitude: number;
     longitude: number;
     locationName: string;
+    country: string;
+    state: string;
+    city: string;
     source: string;
     eventTime: string;
     status: string;
@@ -18,6 +21,15 @@ export interface DisasterEvent {
     createdBy: string;
     approvedBy: string;
     approvedAt: string;
+}
+
+export interface AlertAcknowledgment {
+    id: number;
+    disasterId: number;
+    responderId: number;
+    responderEmail: string;
+    status: string;
+    acknowledgedAt: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -76,5 +88,49 @@ export class DisasterService {
 
     getAdminStatistics(): Observable<any> {
         return this.http.get<any>(`${this.baseUrl}/admin/disasters/statistics`);
+    }
+
+    // Alerts
+    getMyAlerts(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/alerts/my-alerts`);
+    }
+
+    getAllAlerts(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/alerts/all`);
+    }
+
+    // Acknowledgments
+    acknowledgeAlert(disasterId: number): Observable<any> {
+        return this.http.post(`${this.baseUrl}/acknowledgments/acknowledge`, { disasterId });
+    }
+
+    getMyAcknowledgments(): Observable<AlertAcknowledgment[]> {
+        return this.http.get<AlertAcknowledgment[]>(`${this.baseUrl}/acknowledgments/my`);
+    }
+
+    getAcknowledgmentsForDisaster(disasterId: number): Observable<AlertAcknowledgment[]> {
+        return this.http.get<AlertAcknowledgment[]>(`${this.baseUrl}/acknowledgments/disaster/${disasterId}`);
+    }
+
+    getAllAcknowledgments(): Observable<AlertAcknowledgment[]> {
+        return this.http.get<AlertAcknowledgment[]>(`${this.baseUrl}/acknowledgments/all`);
+    }
+
+    // Profile
+    getMyProfile(): Observable<any> {
+        return this.http.get<any>(`${this.baseUrl}/profile/my`);
+    }
+
+    updateProfile(data: any): Observable<any> {
+        return this.http.put(`${this.baseUrl}/profile/update`, data);
+    }
+
+    // Admin: responder region management
+    getResponders(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/profile/role/RESPONDER`);
+    }
+
+    adminUpdateProfile(userId: number, data: any): Observable<any> {
+        return this.http.put(`${this.baseUrl}/profile/admin/update/${userId}`, data);
     }
 }

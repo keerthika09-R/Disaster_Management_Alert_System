@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.Entity.DisasterEvent;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.DisasterEventRequest;
+import com.example.demo.service.AlertService;
 import com.example.demo.service.DisasterApiService;
 import com.example.demo.service.DisasterEventService;
 import org.springframework.http.ResponseEntity;
@@ -19,25 +20,22 @@ public class AdminDisasterController {
 
     private final DisasterEventService disasterEventService;
     private final DisasterApiService disasterApiService;
+    private final AlertService alertService;
 
     public AdminDisasterController(DisasterEventService disasterEventService,
-            DisasterApiService disasterApiService) {
+            DisasterApiService disasterApiService,
+            AlertService alertService) {
         this.disasterEventService = disasterEventService;
         this.disasterApiService = disasterApiService;
+        this.alertService = alertService;
     }
 
-    /**
-     * GET /api/admin/disasters/pending - Get all pending alerts for admin review
-     */
     @GetMapping("/pending")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DisasterEvent>> getPendingAlerts() {
         return ResponseEntity.ok(disasterEventService.getPendingEvents());
     }
 
-    /**
-     * GET /api/admin/disasters/all - Get ALL events (admin view)
-     */
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DisasterEvent>> getAllAlerts() {
@@ -45,19 +43,20 @@ public class AdminDisasterController {
     }
 
     /**
-     * PUT /api/admin/disasters/{id}/approve - Approve a pending alert
+     * Approve = Verify & Publish → auto-broadcasts a region alert
      */
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DisasterEvent>> approveAlert(
             @PathVariable Long id, Authentication authentication) {
         DisasterEvent event = disasterEventService.approveEvent(id, authentication.getName());
-        return ResponseEntity.ok(ApiResponse.success("Alert approved and published", event));
+
+        // Auto-broadcast region-based alert
+        alertService.createAlertFromDisaster(event, authentication.getName());
+
+        return ResponseEntity.ok(ApiResponse.success("Alert verified, published, and broadcast to region", event));
     }
 
-    /**
-     * PUT /api/admin/disasters/{id}/reject - Reject a pending alert
-     */
     @PutMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DisasterEvent>> rejectAlert(
@@ -66,9 +65,6 @@ public class AdminDisasterController {
         return ResponseEntity.ok(ApiResponse.success("Alert rejected", event));
     }
 
-    /**
-     * PUT /api/admin/disasters/{id}/edit - Edit alert details before broadcast
-     */
     @PutMapping("/{id}/edit")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DisasterEvent>> editAlert(
@@ -77,9 +73,6 @@ public class AdminDisasterController {
         return ResponseEntity.ok(ApiResponse.success("Alert updated successfully", event));
     }
 
-    /**
-     * POST /api/admin/disasters/create - Manually create a disaster event
-     */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DisasterEvent>> createAlert(
@@ -88,9 +81,6 @@ public class AdminDisasterController {
         return ResponseEntity.ok(ApiResponse.success("Disaster event created successfully", event));
     }
 
-    /**
-     * DELETE /api/admin/disasters/{id} - Delete an event
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteAlert(@PathVariable Long id) {
@@ -98,19 +88,14 @@ public class AdminDisasterController {
         return ResponseEntity.ok(ApiResponse.success("Event deleted", "Deleted event " + id));
     }
 
-    /**
-     * POST /api/admin/disasters/sync - Manually trigger API sync
-     */
     @PostMapping("/sync")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> syncFromApi() {
         disasterApiService.fetchAndStoreEarthquakes();
-        return ResponseEntity.ok(ApiResponse.success("Sync completed", "Data synced from external APIs"));
+        disasterApiService.fetchAndStoreWeatherAlerts();
+        return ResponseEntity.ok(ApiResponse.success("Sync completed", "Data synced from USGS + OpenWeather APIs"));
     }
 
-    /**
-     * GET /api/admin/disasters/statistics - Get admin statistics
-     */
     @GetMapping("/statistics")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getStatistics() {

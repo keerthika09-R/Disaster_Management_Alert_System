@@ -1,166 +1,322 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { DisasterService, DisasterEvent } from '../services/disaster.service';
+
+const COUNTRY_STATES: { [key: string]: string[] } = {
+    'India': ['Andhra Pradesh', 'Bihar', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh',
+        'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+        'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
+        'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Assam', 'Chhattisgarh', 'Jammu and Kashmir'],
+    'United States': ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+        'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas',
+        'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+        'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+        'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
+        'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+        'West Virginia', 'Wisconsin', 'Wyoming'],
+    'United Kingdom': ['England', 'Scotland', 'Wales', 'Northern Ireland'],
+    'Japan': ['Hokkaido', 'Tohoku', 'Kanto', 'Chubu', 'Kansai', 'Chugoku', 'Shikoku', 'Kyushu', 'Tokyo'],
+    'Australia': ['New South Wales', 'Victoria', 'Queensland', 'South Australia', 'Western Australia', 'Tasmania'],
+    'Canada': ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Ontario', 'Quebec', 'Saskatchewan'],
+    'Germany': ['Bavaria', 'Berlin', 'Hamburg', 'Hesse', 'Lower Saxony', 'North Rhine-Westphalia', 'Saxony'],
+    'France': ['Île-de-France', 'Provence-Alpes-Côte d\'Azur', 'Auvergne-Rhône-Alpes', 'Nouvelle-Aquitaine'],
+    'China': ['Beijing', 'Shanghai', 'Guangdong', 'Sichuan', 'Zhejiang', 'Jiangsu', 'Shandong'],
+    'Brazil': ['São Paulo', 'Rio de Janeiro', 'Minas Gerais', 'Bahia', 'Paraná']
+};
 
 @Component({
     selector: 'app-disaster-monitor',
     templateUrl: './disaster-monitor.component.html',
-    styleUrls: ['./disaster-monitor.component.css']
+    styles: [`
+    .tab-btn {
+      padding: 10px 18px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-count {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+  `]
 })
 export class DisasterMonitorComponent implements OnInit {
-    userEmail = '';
-    userRole = '';
-    activeTab = 'live-dashboard';
-    myProfile: any = {};
 
-    // Data
-    verifiedEvents: DisasterEvent[] = [];
-    pendingEvents: DisasterEvent[] = [];
-    allEvents: DisasterEvent[] = [];
-    stats: any = {};
-    filteredEvents: DisasterEvent[] = [];
-
-    // Filters
-    filterType = '';
-    filterSeverity = '';
-    filterLocation = '';
-
-    // Create form
-    showCreateForm = false;
-    showEditModal = false;
-    editingEvent: DisasterEvent | null = null;
-    createForm: any = {
-        title: '', description: '', disasterType: 'EARTHQUAKE',
-        severity: 'MEDIUM', latitude: null, longitude: null,
-        locationName: '', source: 'MANUAL'
-    };
-
-    // State
-    isLoading = false;
-    isSyncing = false;
+    activeTab = 'pending';
     statusMessage = '';
     statusType = '';
+    syncing = false;
 
+    // Tabs
+    tabs = [
+        { key: 'pending', label: '⏳ Pending', count: 0 },
+        { key: 'verified', label: '✓ Verified', count: 0 },
+        { key: 'all', label: '📋 All Events', count: undefined },
+        { key: 'create', label: '+ Report Event', count: undefined }
+    ];
+
+    // Data
+    pendingEvents: DisasterEvent[] = [];
+    verifiedEvents: DisasterEvent[] = [];
+    allEvents: DisasterEvent[] = [];
+
+    // Pending filters + pagination
+    filteredEvents: DisasterEvent[] = [];
+    filterType = '';
+    filterSeverity = '';
+    filterSearch = '';
+    currentPage = 1;
+    pageSize = 8;
+    totalPages = 1;
+    pageNumbers: number[] = [];
+    paginatedEvents: DisasterEvent[] = [];
+
+    // All tab filters + pagination
+    filteredAllEvents: DisasterEvent[] = [];
+    allFilterType = '';
+    allFilterStatus = '';
+    allFilterSearch = '';
+    allCurrentPage = 1;
+    allTotalPages = 1;
+    allPageNumbers: number[] = [];
+    paginatedAllEvents: DisasterEvent[] = [];
+
+    // Edit modal
+    editModal = false;
+    editData: any = {};
+    editStates: string[] = [];
+    editEventId: number | null = null;
+
+    // Create form
+    newEvent: any = {
+        title: '', description: '', disasterType: 'EARTHQUAKE', severity: 'MEDIUM',
+        country: '', state: '', city: '', locationName: '', latitude: 0, longitude: 0
+    };
+    newEventStates: string[] = [];
+
+    // Options
     disasterTypes = ['FLOOD', 'CYCLONE', 'EARTHQUAKE', 'FIRE', 'STORM', 'TSUNAMI', 'LANDSLIDE', 'DROUGHT', 'OTHER'];
-    severityLevels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+    severities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+    countryList = Object.keys(COUNTRY_STATES);
 
-    constructor(
-        private router: Router,
-        private http: HttpClient,
-        private disasterService: DisasterService
-    ) { }
+    constructor(private ds: DisasterService, private router: Router) { }
 
-    ngOnInit() {
-        const token = localStorage.getItem('jwt_token');
-        if (!token) { this.router.navigate(['/login']); return; }
-        this.userEmail = localStorage.getItem('user_email') || '';
-        this.userRole = localStorage.getItem('user_role') || '';
-        this.loadProfile();
-        this.loadDashboardData();
+    ngOnInit() { this.loadTab(); }
+
+    goBack() { this.router.navigate(['/dashboard']); }
+
+    loadTab() {
+        if (this.activeTab === 'pending') this.loadPending();
+        else if (this.activeTab === 'verified') this.loadVerified();
+        else if (this.activeTab === 'all') this.loadAll();
     }
 
-    loadProfile() {
-        this.http.get('http://localhost:8443/api/profile/my').subscribe({
-            next: (data: any) => { this.myProfile = data; },
-            error: () => { }
+    // ── Data loading ──
+    loadPending() {
+        this.ds.getPendingDisasters().subscribe({
+            next: (d: DisasterEvent[]) => {
+                this.pendingEvents = d || [];
+                this.tabs[0].count = this.pendingEvents.length;
+                this.applyFilters();
+            }, error: () => { }
         });
     }
 
-    loadDashboardData() {
-        this.isLoading = true;
-        this.disasterService.getVerifiedDisasters().subscribe({
-            next: (data: DisasterEvent[]) => { this.verifiedEvents = data; this.filteredEvents = data; this.isLoading = false; },
-            error: () => { this.isLoading = false; }
+    loadVerified() {
+        this.ds.getVerifiedDisasters().subscribe({
+            next: (d: DisasterEvent[]) => {
+                this.verifiedEvents = d || [];
+                this.tabs[1].count = this.verifiedEvents.length;
+            }, error: () => { }
         });
-        this.disasterService.getStatistics().subscribe({
-            next: (data: any) => { this.stats = data; },
-            error: () => { }
-        });
-        if (this.userRole === 'ADMIN') {
-            this.disasterService.getPendingDisasters().subscribe({
-                next: (data: DisasterEvent[]) => { this.pendingEvents = data; },
-                error: () => { }
-            });
-            this.disasterService.getAllDisasters().subscribe({
-                next: (data: DisasterEvent[]) => { this.allEvents = data; },
-                error: () => { }
-            });
-        }
     }
 
+    loadAll() {
+        this.ds.getAllDisasters().subscribe({
+            next: (d: DisasterEvent[]) => {
+                this.allEvents = d || [];
+                this.applyAllFilters();
+            }, error: () => { }
+        });
+    }
+
+    // ── Pending Filters ──
     applyFilters() {
-        const filters: any = {};
-        if (this.filterType) filters.type = this.filterType;
-        if (this.filterSeverity) filters.severity = this.filterSeverity;
-        if (this.filterLocation) filters.location = this.filterLocation;
-        this.disasterService.getVerifiedDisasters(filters).subscribe({
-            next: (data: DisasterEvent[]) => { this.filteredEvents = data; },
-            error: () => { }
+        let list = [...this.pendingEvents];
+        if (this.filterType) list = list.filter(e => e.disasterType === this.filterType);
+        if (this.filterSeverity) list = list.filter(e => e.severity === this.filterSeverity);
+        if (this.filterSearch) {
+            const q = this.filterSearch.toLowerCase();
+            list = list.filter(e =>
+                (e.title || '').toLowerCase().includes(q) ||
+                (e.country || '').toLowerCase().includes(q) ||
+                (e.state || '').toLowerCase().includes(q)
+            );
+        }
+        this.filteredEvents = list;
+        this.currentPage = 1;
+        this.updatePagination();
+    }
+
+    updatePagination() {
+        this.totalPages = Math.max(1, Math.ceil(this.filteredEvents.length / this.pageSize));
+        this.pageNumbers = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+        const start = (this.currentPage - 1) * this.pageSize;
+        this.paginatedEvents = this.filteredEvents.slice(start, start + this.pageSize);
+    }
+
+    goToPage(p: number) {
+        if (p < 1 || p > this.totalPages) return;
+        this.currentPage = p;
+        this.updatePagination();
+    }
+
+    // ── All Tab Filters ──
+    applyAllFilters() {
+        let list = [...this.allEvents];
+        if (this.allFilterType) list = list.filter(e => e.disasterType === this.allFilterType);
+        if (this.allFilterStatus) list = list.filter(e => e.status === this.allFilterStatus);
+        if (this.allFilterSearch) {
+            const q = this.allFilterSearch.toLowerCase();
+            list = list.filter(e =>
+                (e.title || '').toLowerCase().includes(q) ||
+                (e.country || '').toLowerCase().includes(q) ||
+                (e.state || '').toLowerCase().includes(q)
+            );
+        }
+        this.filteredAllEvents = list;
+        this.allCurrentPage = 1;
+        this.updateAllPagination();
+    }
+
+    updateAllPagination() {
+        this.allTotalPages = Math.max(1, Math.ceil(this.filteredAllEvents.length / this.pageSize));
+        this.allPageNumbers = Array.from({ length: this.allTotalPages }, (_, i) => i + 1);
+        const start = (this.allCurrentPage - 1) * this.pageSize;
+        this.paginatedAllEvents = this.filteredAllEvents.slice(start, start + this.pageSize);
+    }
+
+    allGoToPage(p: number) {
+        if (p < 1 || p > this.allTotalPages) return;
+        this.allCurrentPage = p;
+        this.updateAllPagination();
+    }
+
+    // ── Actions ──
+    approve(e: DisasterEvent) {
+        this.ds.approveDisaster(e.id).subscribe({
+            next: () => { this.showStatus('Event verified and alert broadcast.', 'success'); this.loadPending(); this.loadVerified(); },
+            error: () => this.showStatus('Failed to verify.', 'error')
         });
     }
 
-    clearFilters() {
-        this.filterType = '';
-        this.filterSeverity = '';
-        this.filterLocation = '';
-        this.filteredEvents = this.verifiedEvents;
-    }
-
-    approveEvent(id: number) {
-        this.disasterService.approveDisaster(id).subscribe({
-            next: () => { this.showStatus('Alert approved & published!', 'success'); this.loadDashboardData(); },
-            error: () => { this.showStatus('Failed to approve', 'error'); }
+    reject(e: DisasterEvent) {
+        this.ds.rejectDisaster(e.id).subscribe({
+            next: () => { this.showStatus('Event rejected.', 'info'); this.loadPending(); },
+            error: () => this.showStatus('Failed to reject.', 'error')
         });
     }
 
-    rejectEvent(id: number) {
-        this.disasterService.rejectDisaster(id).subscribe({
-            next: () => { this.showStatus('Alert rejected', 'info'); this.loadDashboardData(); },
-            error: () => { this.showStatus('Failed to reject', 'error'); }
+    deleteEvent(e: DisasterEvent) {
+        this.ds.deleteDisaster(e.id).subscribe({
+            next: () => { this.showStatus('Event deleted.', 'info'); this.loadAll(); },
+            error: () => this.showStatus('Failed to delete.', 'error')
         });
     }
 
-    deleteEvent(id: number) {
-        if (!confirm('Delete this event permanently?')) return;
-        this.disasterService.deleteDisaster(id).subscribe({
-            next: () => { this.showStatus('Event deleted', 'info'); this.loadDashboardData(); },
-            error: () => { this.showStatus('Failed to delete', 'error'); }
-        });
-    }
-
-    syncApi() {
-        this.isSyncing = true;
-        this.disasterService.syncFromApi().subscribe({
-            next: () => { this.isSyncing = false; this.showStatus('Synced from USGS API!', 'success'); this.loadDashboardData(); },
-            error: () => { this.isSyncing = false; this.showStatus('Sync failed', 'error'); }
-        });
-    }
-
-    submitCreate() {
-        this.disasterService.createDisaster(this.createForm).subscribe({
+    syncFromApi() {
+        this.syncing = true;
+        this.ds.syncFromApi().subscribe({
             next: () => {
-                this.showStatus('Event created!', 'success');
-                this.createForm = { title: '', description: '', disasterType: 'EARTHQUAKE', severity: 'MEDIUM', latitude: null, longitude: null, locationName: '', source: 'MANUAL' };
-                this.loadDashboardData();
+                this.syncing = false;
+                this.showStatus('Sync complete. New events loaded.', 'success');
+                this.loadPending();
             },
-            error: () => { this.showStatus('Failed to create', 'error'); }
+            error: () => { this.syncing = false; this.showStatus('Sync failed.', 'error'); }
         });
     }
 
-    openEditModal(event: DisasterEvent) {
-        this.editingEvent = { ...event };
-        this.showEditModal = true;
+    // ── Edit Modal ──
+    openEditModal(e: DisasterEvent) {
+        this.editEventId = e.id;
+        this.editData = {
+            title: e.title, description: e.description, disasterType: e.disasterType,
+            severity: e.severity, country: e.country || '', state: e.state || '', city: e.city || '',
+            locationName: e.locationName
+        };
+        this.editStates = COUNTRY_STATES[this.editData.country] || [];
+        this.editModal = true;
     }
 
-    closeEditModal() { this.showEditModal = false; this.editingEvent = null; }
+    onEditCountryChange() {
+        this.editStates = COUNTRY_STATES[this.editData.country] || [];
+        this.editData.state = '';
+    }
 
-    submitEdit() {
-        if (!this.editingEvent) return;
-        this.disasterService.editDisaster(this.editingEvent.id, this.editingEvent).subscribe({
-            next: () => { this.showStatus('Event updated!', 'success'); this.closeEditModal(); this.loadDashboardData(); },
-            error: () => { this.showStatus('Failed to update', 'error'); }
+    saveEdit() {
+        if (!this.editEventId) return;
+        this.ds.editDisaster(this.editEventId, this.editData).subscribe({
+            next: () => {
+                this.editModal = false;
+                this.showStatus('Event updated.', 'success');
+                this.loadTab();
+            },
+            error: () => this.showStatus('Failed to update.', 'error')
         });
+    }
+
+    // ── Create ──
+    onNewCountryChange() {
+        this.newEventStates = COUNTRY_STATES[this.newEvent.country] || [];
+        this.newEvent.state = '';
+    }
+
+    createEvent() {
+        this.ds.createDisaster(this.newEvent).subscribe({
+            next: () => {
+                this.showStatus('Event created.', 'success');
+                this.newEvent = {
+                    title: '', description: '', disasterType: 'EARTHQUAKE', severity: 'MEDIUM',
+                    country: '', state: '', city: '', locationName: '', latitude: 0, longitude: 0
+                };
+                this.activeTab = 'pending';
+                this.loadPending();
+            },
+            error: () => this.showStatus('Failed to create event.', 'error')
+        });
+    }
+
+    // ── Helpers ──
+    formatDate(d: string): string {
+        if (!d) return '-';
+        return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    sevBadge(s: string): string {
+        if (s === 'CRITICAL' || s === 'HIGH') return 'badge-danger';
+        if (s === 'MEDIUM') return 'badge-warning';
+        return 'badge-success';
+    }
+
+    statusBadge(s: string): string {
+        if (s === 'VERIFIED') return 'badge-success';
+        if (s === 'PENDING') return 'badge-warning';
+        return 'badge-danger';
     }
 
     showStatus(msg: string, type: string) {
@@ -168,34 +324,4 @@ export class DisasterMonitorComponent implements OnInit {
         this.statusType = type;
         setTimeout(() => { this.statusMessage = ''; }, 3500);
     }
-
-    getTypeIcon(type: string): string {
-        const icons: any = { EARTHQUAKE: '🌍', FLOOD: '🌊', CYCLONE: '🌀', FIRE: '🔥', STORM: '⛈️', TSUNAMI: '🌊', LANDSLIDE: '⛰️', DROUGHT: '☀️', OTHER: '⚠️' };
-        return icons[type] || '⚠️';
-    }
-
-    formatDate(dateStr: string): string {
-        if (!dateStr) return 'N/A';
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
-
-    getPageTitle(): string {
-        const t: any = { 'live-dashboard': 'Live Dashboard', 'pending-review': 'Pending Review', 'all-events': 'All Events', 'create-event': 'Create Event', 'profile': 'Profile' };
-        return t[this.activeTab] || 'Disaster Monitor';
-    }
-
-    getPageSubtitle(): string {
-        const s: any = { 'live-dashboard': 'Real-time disaster monitoring from USGS API', 'pending-review': 'Review and verify incoming alerts', 'all-events': 'Complete event history', 'create-event': 'Manually report a disaster', 'profile': 'Your account details' };
-        return s[this.activeTab] || '';
-    }
-
-    logout() {
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('user_role');
-        localStorage.removeItem('user_email');
-        this.router.navigate(['/login']);
-    }
-
-    goToDashboard() { this.router.navigate(['/dashboard']); }
 }

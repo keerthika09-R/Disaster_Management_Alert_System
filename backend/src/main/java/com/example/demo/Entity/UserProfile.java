@@ -1,4 +1,5 @@
 package com.example.demo.Entity;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -10,24 +11,19 @@ public class UserProfile {
     private Long id;
 
     private String fullName;
-
     private String phoneNumber;
+    private String country;
+    private String state;
+    private String city;
 
-    private String region; // location / area
+    @Column(name = "region")
+    private String region; // kept for backward compatibility
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Constructors
     public UserProfile() {
-    }
-
-    public UserProfile(String fullName, String phoneNumber, String region, User user) {
-        this.fullName = fullName;
-        this.phoneNumber = phoneNumber;
-        this.region = region;
-        this.user = user;
     }
 
     // Getters and Setters
@@ -53,6 +49,30 @@ public class UserProfile {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getRegion() {

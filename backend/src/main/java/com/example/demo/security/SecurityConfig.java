@@ -36,8 +36,9 @@ public class SecurityConfig {
                                 "/api/disasters")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/responder/**").hasRole("RESPONDER")
-                        .requestMatchers("/api/citizen/**").hasRole("CITIZEN")
+                        .requestMatchers("/api/profile/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/acknowledgments/**").authenticated()
+                        .requestMatchers("/api/alerts/**").authenticated()
                         .requestMatchers("/api/profile/**").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler()))
@@ -49,8 +50,7 @@ public class SecurityConfig {
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-        configuration.setAllowedOriginPatterns(java.util.Arrays.asList("http://localhost:*")); // Allow any port on
-                                                                                               // localhost
+        configuration.setAllowedOriginPatterns(java.util.Arrays.asList("http://localhost:*"));
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
         configuration.setAllowCredentials(true);

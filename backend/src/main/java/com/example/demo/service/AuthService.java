@@ -41,7 +41,6 @@ public class AuthService {
     @org.springframework.beans.factory.annotation.Value("${app.security.responder-key:RESCUE-KEY-456}")
     private String responderKey;
 
-    // REGISTER
     @org.springframework.transaction.annotation.Transactional
     public User register(RegisterRequest request) {
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
@@ -60,7 +59,6 @@ public class AuthService {
 
         String normalizedRole = request.getRole().toUpperCase();
 
-        // Validate Secret Keys for Privileged Roles
         if ("ADMIN".equals(normalizedRole)) {
             if (request.getSecretKey() == null || !request.getSecretKey().equals(adminKey)) {
                 throw new RuntimeException("Invalid Admin Secret Key. Access Denied.");
@@ -81,11 +79,13 @@ public class AuthService {
 
             User savedUser = userService.saveUser(user);
 
-            // Create and save UserProfile
             UserProfile profile = new UserProfile();
             profile.setUser(savedUser);
             profile.setFullName(request.getFullName() != null ? request.getFullName() : "");
             profile.setPhoneNumber(request.getPhoneNumber() != null ? request.getPhoneNumber() : "");
+            profile.setCountry(request.getCountry() != null ? request.getCountry() : "");
+            profile.setState(request.getState() != null ? request.getState() : "");
+            profile.setCity(request.getCity() != null ? request.getCity() : "");
             profile.setRegion(request.getRegion() != null ? request.getRegion() : "");
 
             userProfileRepository.save(profile);
@@ -97,7 +97,6 @@ public class AuthService {
         }
     }
 
-    // LOGIN
     public JwtResponse login(LoginRequest request) {
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
             throw new RuntimeException("Email is required");

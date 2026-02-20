@@ -1,410 +1,442 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { DisasterService } from '../services/disaster.service';
+
+const COUNTRY_STATES: { [key: string]: string[] } = {
+  'India': ['Andhra Pradesh', 'Bihar', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh',
+    'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+    'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
+    'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Assam', 'Chhattisgarh', 'Jammu and Kashmir'],
+  'United States': ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+    'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas',
+    'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+    'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+    'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
+    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+    'West Virginia', 'Wisconsin', 'Wyoming'],
+  'United Kingdom': ['England', 'Scotland', 'Wales', 'Northern Ireland'],
+  'Japan': ['Hokkaido', 'Tohoku', 'Kanto', 'Chubu', 'Kansai', 'Chugoku', 'Shikoku', 'Kyushu', 'Tokyo'],
+  'Australia': ['New South Wales', 'Victoria', 'Queensland', 'South Australia', 'Western Australia', 'Tasmania'],
+  'Canada': ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Ontario', 'Quebec', 'Saskatchewan'],
+  'Germany': ['Bavaria', 'Berlin', 'Hamburg', 'Hesse', 'Lower Saxony', 'North Rhine-Westphalia', 'Saxony'],
+  'France': ['Île-de-France', 'Provence-Alpes-Côte d\'Azur', 'Auvergne-Rhône-Alpes', 'Nouvelle-Aquitaine'],
+  'China': ['Beijing', 'Shanghai', 'Guangdong', 'Sichuan', 'Zhejiang', 'Jiangsu', 'Shandong'],
+  'Brazil': ['São Paulo', 'Rio de Janeiro', 'Minas Gerais', 'Bahia', 'Paraná']
+};
 
 @Component({
   selector: 'app-dashboard',
   template: `
-    <!-- Top Nav -->
-    <nav class="top-nav">
-      <div class="nav-brand">
-        <div class="nav-logo">🛡️</div>
-        <div class="nav-title">Disaster<span>AlertHub</span></div>
-      </div>
-      <div class="nav-links">
-        <button class="nav-link" [class.active]="page==='home'" (click)="page='home'">Home</button>
-        <button class="nav-link" [class.active]="page==='alerts'" (click)="page='alerts'; loadAlerts()">Alerts</button>
-        <button class="nav-link" *ngIf="role==='ADMIN' || role==='RESPONDER'" [class.active]="page==='tasks'" (click)="page='tasks'; loadTasks()">Tasks</button>
-        <button class="nav-link" *ngIf="role==='ADMIN'" [class.active]="page==='users'" (click)="page='users'; loadUsers()">Users</button>
-        <button class="nav-link" [class.active]="page==='profile'" (click)="page='profile'; loadProfile()">Profile</button>
-        <button class="nav-link" (click)="goToMonitor()">🌍 Monitor</button>
-      </div>
-      <div class="nav-right">
-        <span class="nav-user">{{ email }}</span>
-        <div class="nav-avatar">{{ email.charAt(0).toUpperCase() }}</div>
-        <button class="nav-logout" (click)="logout()">Logout</button>
-      </div>
-    </nav>
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>⚡ DMAS</h2>
+            <span class="sidebar-subtitle">Alert & Response System</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item" [class.active]="view==='home'" (click)="view='home'">📊 Dashboard</a>
+            <a class="nav-item" [class.active]="view==='profile'" (click)="view='profile'">👤 Profile</a>
 
-    <div class="page-container">
-      <!-- ===== HOME ===== -->
-      <div *ngIf="page==='home'">
-        <div class="page-title-row">
-          <div>
-            <h1 class="page-title">Welcome back, {{ email.split('@')[0] }}</h1>
-            <p class="page-sub">Role: {{ role }} &bull; Dashboard overview</p>
-          </div>
+            <ng-container *ngIf="userRole==='ADMIN'">
+                <a class="nav-item" routerLink="/disaster-monitor">🌍 Disaster Monitor</a>
+                <a class="nav-item" [class.active]="view==='responders'" (click)="view='responders'">👥 Responder Regions</a>
+                <a class="nav-item" [class.active]="view==='admin-acks'" (click)="view='admin-acks'; loadAcks()">✅ Acknowledgments</a>
+            </ng-container>
+
+            <ng-container *ngIf="userRole==='RESPONDER'">
+                <a class="nav-item" [class.active]="view==='alerts'" (click)="view='alerts'; loadAlerts()">🔔 Active Alerts</a>
+            </ng-container>
+
+            <ng-container *ngIf="userRole==='CITIZEN'">
+                <a class="nav-item" [class.active]="view==='alerts'" (click)="view='alerts'; loadAlerts()">📢 Alerts Feed</a>
+            </ng-container>
+
+            <a class="nav-item nav-logout" (click)="logout()">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        <div class="top-bar">
+            <h1 class="page-title">
+                <span *ngIf="view==='home'">Dashboard</span>
+                <span *ngIf="view==='profile'">Profile Settings</span>
+                <span *ngIf="view==='alerts'">{{ userRole === 'CITIZEN' ? 'Alerts Feed' : 'Active Alerts' }}</span>
+                <span *ngIf="view==='responders'">Responder Region Management</span>
+                <span *ngIf="view==='admin-acks'">Alert Acknowledgments</span>
+            </h1>
+            <span class="user-badge">{{ userEmail }} · {{ userRole }}</span>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon" style="background:#fee2e2;">🚨</div>
-            <div><div class="stat-num">{{ myAlerts.length }}</div><div class="stat-label">My Alerts</div></div>
-          </div>
-          <div class="stat-card" *ngIf="role==='ADMIN'">
-            <div class="stat-icon" style="background:#dbeafe;">👥</div>
-            <div><div class="stat-num">{{ allUsers.length }}</div><div class="stat-label">Users</div></div>
-          </div>
-          <div class="stat-card" *ngIf="role==='ADMIN' || role==='RESPONDER'">
-            <div class="stat-icon" style="background:#fef3c7;">📋</div>
-            <div><div class="stat-num">{{ allTasks.length }}</div><div class="stat-label">Tasks</div></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background:#d1fae5;">✅</div>
-            <div><div class="stat-num">{{ completedTasks }}</div><div class="stat-label">Completed</div></div>
-          </div>
-        </div>
+        <div *ngIf="statusMessage" class="status-bar" [ngClass]="statusType">{{ statusMessage }}</div>
 
-        <div class="two-col">
-          <div>
-            <div class="card">
-              <div class="card-header"><div class="card-title">Recent Alerts</div></div>
-              <div *ngIf="myAlerts.length===0" class="card-empty">No alerts at this time.</div>
-              <div *ngFor="let a of myAlerts.slice(0,5)" class="list-item">
-                <div class="list-dot" [ngClass]="{'dot-red':a.severity==='CRITICAL'||a.severity==='HIGH','dot-amber':a.severity==='MEDIUM','dot-green':a.severity==='LOW'}"></div>
-                <div>
-                  <div class="list-text">{{ a.message || a.region }}</div>
-                  <div class="list-meta">{{ a.severity }} &bull; {{ a.region }} &bull; {{ a.createdAt | date:'medium' }}</div>
+        <!-- ============ HOME ============ -->
+        <div *ngIf="view==='home'" style="padding: 24px 28px;">
+
+            <!-- ADMIN HOME -->
+            <ng-container *ngIf="userRole==='ADMIN'">
+                <div class="stats-grid" style="padding: 0; margin-bottom: 24px;">
+                    <div class="stat-card"><div class="stat-label">Total Events</div><div class="stat-number">{{ stats.totalEvents || 0 }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-number" style="color: var(--warning);">{{ stats.pendingEvents || 0 }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Verified</div><div class="stat-number" style="color: var(--success);">{{ stats.verifiedEvents || 0 }}</div></div>
+                    <div class="stat-card"><div class="stat-label">Rejected</div><div class="stat-number" style="color: var(--danger);">{{ stats.rejectedEvents || 0 }}</div></div>
                 </div>
-              </div>
+                <div class="card">
+                    <h3 class="card-title">Recent Verified Disasters</h3>
+                    <table class="data-table">
+                        <thead><tr><th>Title</th><th>Type</th><th>Severity</th><th>Country</th><th>State</th><th>Source</th><th>Time</th></tr></thead>
+                        <tbody>
+                            <tr *ngFor="let e of recentEvents">
+                                <td><strong>{{ e.title }}</strong></td>
+                                <td>{{ e.disasterType }}</td>
+                                <td><span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span></td>
+                                <td>{{ e.country || '-' }}</td>
+                                <td>{{ e.state || '-' }}</td>
+                                <td>{{ e.source }}</td>
+                                <td style="color: var(--text-muted); font-size: 12px;">{{ formatDate(e.eventTime) }}</td>
+                            </tr>
+                            <tr *ngIf="recentEvents.length===0"><td colspan="7" class="card-empty">No verified events yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </ng-container>
+
+            <!-- RESPONDER HOME -->
+            <ng-container *ngIf="userRole==='RESPONDER'">
+                <div class="card">
+                    <h3 class="card-title">Welcome, Responder</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        You'll receive region-specific alerts based on your profile location.
+                        Check <strong style="color: var(--accent);">Active Alerts</strong> for new disaster notifications in your area.
+                    </p>
+                    <button class="btn btn-primary" (click)="view='alerts'; loadAlerts()">View Active Alerts →</button>
+                </div>
+            </ng-container>
+
+            <!-- CITIZEN HOME -->
+            <ng-container *ngIf="userRole==='CITIZEN'">
+                <div class="card">
+                    <h3 class="card-title">Welcome, Citizen</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        Stay informed about disasters in your region.
+                        Check <strong style="color: var(--accent);">Alerts Feed</strong> for verified alerts matching your location.
+                    </p>
+                    <button class="btn btn-primary" (click)="view='alerts'; loadAlerts()">View Alerts Feed →</button>
+                </div>
+            </ng-container>
+        </div>
+
+        <!-- ============ PROFILE ============ -->
+        <div *ngIf="view==='profile'" style="padding: 24px 28px;">
+            <div class="card" style="max-width: 560px;">
+                <h3 class="card-title">Your Profile</h3>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" [(ngModel)]="profile.fullName" />
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" [(ngModel)]="profile.phoneNumber" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Country</label>
+                        <select [(ngModel)]="profile.country" (ngModelChange)="onProfileCountryChange()">
+                            <option value="">Select Country</option>
+                            <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <select [(ngModel)]="profile.state" [disabled]="!profile.country">
+                            <option value="">Select State</option>
+                            <option *ngFor="let s of profileStates" [value]="s">{{ s }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>City / District</label>
+                    <input type="text" [(ngModel)]="profile.city" />
+                </div>
+                <button class="btn btn-primary" (click)="saveProfile()" style="margin-top: 8px;">Save Profile</button>
             </div>
-          </div>
+        </div>
 
-          <div>
-            <div class="card contact-card">
-              <div class="card-header"><div class="card-title">🆘 Emergency Contacts</div></div>
-              <div class="contact-item"><span class="contact-name">Police</span><button class="contact-btn">📞</button></div>
-              <div class="contact-item"><span class="contact-name">Fire Dept</span><button class="contact-btn">📞</button></div>
-              <div class="contact-item"><span class="contact-name">Ambulance</span><button class="contact-btn">📞</button></div>
+        <!-- ============ ALERTS (Citizen + Responder) ============ -->
+        <div *ngIf="view==='alerts'" style="padding: 24px 28px;">
+
+            <!-- Filter -->
+            <div class="filter-bar" style="margin-bottom: 16px;">
+                <div class="filter-row">
+                    <select class="filter-input" [(ngModel)]="alertFilter" (ngModelChange)="applyAlertFilter()">
+                        <option value="">All Types</option>
+                        <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
+                    </select>
+                    <span style="color: var(--text-muted); font-size: 13px;">{{ filteredAlerts.length }} alerts in your region</span>
+                </div>
             </div>
-            <div class="info-bar">🛡️ For emergencies, always dial your local emergency number.</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- ===== ALERTS ===== -->
-      <div *ngIf="page==='alerts'">
-        <div class="page-title-row">
-          <div>
-            <h1 class="page-title">Alerts</h1>
-            <p class="page-sub">{{ role==='ADMIN' ? 'All system alerts' : 'Alerts for your region' }}</p>
-          </div>
-          <button *ngIf="role==='ADMIN'" class="btn-primary btn-sm" (click)="showCreateAlert=true">+ Create Alert</button>
-        </div>
+            <!-- Alert cards -->
+            <div *ngFor="let a of filteredAlerts" class="alert-card" [style.border-left-color]="getSevColor(a.severity)">
+                <div class="alert-header" style="margin-bottom: 8px;">
+                    <span class="badge" [ngClass]="sevBadge(a.severity)">{{ a.severity }}</span>
+                    <span class="badge badge-neutral" *ngIf="a.disasterType">{{ a.disasterType }}</span>
+                    <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);">{{ formatDate(a.createdAt) }}</span>
+                </div>
+                <p style="color: var(--text-primary); font-weight: 500; margin-bottom: 4px;">{{ a.message }}</p>
+                <p style="font-size: 12px; color: var(--text-muted);">
+                    📍 {{ a.country || '' }} {{ a.state ? '· ' + a.state : '' }} {{ a.city ? '· ' + a.city : '' }}
+                </p>
 
-        <!-- Admin Create Alert Form -->
-        <div *ngIf="showCreateAlert && role==='ADMIN'" class="card">
-          <div class="card-header"><div class="card-title">Create New Alert</div></div>
-          <div class="card-body">
-            <div class="inline-form">
-              <select class="form-control" [(ngModel)]="newAlert.region">
-                <option value="">Region</option>
-                <option value="North">North</option><option value="South">South</option>
-                <option value="East">East</option><option value="West">West</option>
-                <option value="Central">Central</option>
-              </select>
-              <select class="form-control" [(ngModel)]="newAlert.severity">
-                <option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option>
-                <option value="HIGH">HIGH</option><option value="CRITICAL">CRITICAL</option>
-              </select>
-              <input class="form-control" placeholder="Alert message" [(ngModel)]="newAlert.message" />
-              <button class="btn-primary btn-sm" (click)="createAlert()">Send</button>
-              <button class="btn-outline" (click)="showCreateAlert=false">Cancel</button>
+                <!-- Responder: Acknowledge -->
+                <div *ngIf="userRole==='RESPONDER'" style="margin-top: 10px;">
+                    <button class="btn btn-sm btn-primary" (click)="acknowledgeAlert(a)"
+                        *ngIf="!isAcknowledged(a.disasterId)" >
+                        ✓ Acknowledge
+                    </button>
+                    <span *ngIf="isAcknowledged(a.disasterId)"
+                        style="font-size: 12px; color: var(--success); font-weight: 600;">✓ Acknowledged</span>
+                </div>
+
+                <!-- Citizen: Safety -->
+                <div *ngIf="userRole==='CITIZEN'" class="safety-box">
+                    <strong>Safety:</strong> {{ getSafetyTip(a.disasterType) }}
+                </div>
             </div>
-          </div>
-        </div>
 
-        <div *ngIf="statusMsg" class="alert-msg" [ngClass]="statusType==='success'?'alert-success':'alert-error'">{{ statusMsg }}</div>
-
-        <div class="card">
-          <div *ngIf="myAlerts.length===0" class="card-empty">No alerts found.</div>
-          <div *ngFor="let a of myAlerts" class="list-item">
-            <div class="list-dot" [ngClass]="{'dot-red':a.severity==='CRITICAL'||a.severity==='HIGH','dot-amber':a.severity==='MEDIUM','dot-green':a.severity==='LOW'}"></div>
-            <div style="flex:1">
-              <div class="list-text">{{ a.message }}</div>
-              <div class="list-meta">{{ a.severity }} &bull; {{ a.region }} &bull; {{ a.createdBy }} &bull; {{ a.createdAt | date:'medium' }}</div>
+            <div *ngIf="filteredAlerts.length===0" class="card" style="text-align: center; padding: 40px;">
+                <p style="color: var(--text-muted); font-size: 15px;">No alerts for your region.</p>
+                <p style="color: var(--text-muted); font-size: 12px; margin-top: 6px;">Alerts appear here after admin verification.</p>
             </div>
-            <span class="pill" [ngClass]="{'pill-red':a.severity==='CRITICAL'||a.severity==='HIGH','pill-amber':a.severity==='MEDIUM','pill-green':a.severity==='LOW'}">{{ a.severity }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== TASKS ===== -->
-      <div *ngIf="page==='tasks'">
-        <div class="page-title-row">
-          <div>
-            <h1 class="page-title">Tasks</h1>
-            <p class="page-sub">{{ role==='ADMIN' ? 'Manage rescue task assignments' : 'Your assigned tasks' }}</p>
-          </div>
-          <button *ngIf="role==='ADMIN'" class="btn-primary btn-sm" (click)="showCreateTask=true">+ Assign Task</button>
         </div>
 
-        <!-- Admin Create Task Form -->
-        <div *ngIf="showCreateTask && role==='ADMIN'" class="card">
-          <div class="card-header"><div class="card-title">Assign New Task</div></div>
-          <div class="card-body">
-            <div class="inline-form">
-              <input class="form-control" placeholder="Task title" [(ngModel)]="newTask.title" />
-              <input class="form-control" placeholder="Description" [(ngModel)]="newTask.description" />
-              <input class="form-control" placeholder="Responder email" [(ngModel)]="newTask.assignedTo" />
-              <select class="form-control" [(ngModel)]="newTask.priority">
-                <option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option>
-                <option value="HIGH">HIGH</option><option value="CRITICAL">CRITICAL</option>
-              </select>
-              <button class="btn-primary btn-sm" (click)="createTask()">Create</button>
-              <button class="btn-outline" (click)="showCreateTask=false">Cancel</button>
+        <!-- ============ RESPONDER REGIONS (Admin) ============ -->
+        <div *ngIf="view==='responders' && userRole==='ADMIN'" style="padding: 24px 28px;">
+            <div class="card">
+                <h3 class="card-title">Responder Region Assignment</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Email</th><th>Name</th><th>Country</th><th>State</th><th>City</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let r of responders">
+                            <td><strong>{{ r.email }}</strong></td>
+                            <td>{{ r.fullName || '-' }}</td>
+                            <td>
+                                <select [(ngModel)]="r.editCountry" style="width: 130px;"
+                                    (ngModelChange)="onResponderCountryChange(r)">
+                                    <option value="">Select</option>
+                                    <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select [(ngModel)]="r.editState" style="width: 130px;">
+                                    <option value="">Select</option>
+                                    <option *ngFor="let s of (responderStates[r.id] || [])" [value]="s">{{ s }}</option>
+                                </select>
+                            </td>
+                            <td><input type="text" [(ngModel)]="r.editCity" style="width: 100px;" placeholder="City" /></td>
+                            <td><button class="btn btn-sm btn-primary" (click)="saveResponderRegion(r)">Save</button></td>
+                        </tr>
+                        <tr *ngIf="responders.length===0"><td colspan="6" class="card-empty">No responders found.</td></tr>
+                    </tbody>
+                </table>
             </div>
-          </div>
         </div>
 
-        <div *ngIf="statusMsg" class="alert-msg" [ngClass]="statusType==='success'?'alert-success':'alert-error'">{{ statusMsg }}</div>
-
-        <div class="card">
-          <div *ngIf="allTasks.length===0" class="card-empty">No tasks found.</div>
-          <table *ngIf="allTasks.length>0">
-            <thead>
-              <tr>
-                <th>Title</th><th>Assigned To</th><th>Status</th><th>Priority</th>
-                <th *ngIf="role==='RESPONDER'">Action</th>
-                <th *ngIf="role==='ADMIN'">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let t of allTasks">
-                <td><strong>{{ t.title }}</strong><br><small style="color:var(--text-muted)">{{ t.description }}</small></td>
-                <td>{{ t.assignedTo }}</td>
-                <td>
-                  <span class="pill" [ngClass]="{'pill-amber':t.status==='PENDING','pill-blue':t.status==='ONGOING'||t.status==='IN_PROGRESS','pill-green':t.status==='COMPLETED','pill-red':t.status==='CANCELLED'}">{{ t.status }}</span>
-                </td>
-                <td>{{ t.priority }}</td>
-                <td *ngIf="role==='RESPONDER'">
-                  <select class="form-control" style="width:auto;padding:0.3rem 0.5rem;font-size:0.8rem" [(ngModel)]="t._newStatus" (change)="updateTaskStatus(t)">
-                    <option value="" disabled selected>Update</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="COMPLETED">Completed</option>
-                  </select>
-                </td>
-                <td *ngIf="role==='ADMIN'">
-                  <button class="btn-danger-sm" (click)="deleteTask(t.id)">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===== USERS (Admin only) ===== -->
-      <div *ngIf="page==='users'">
-        <div class="page-title-row">
-          <div>
-            <h1 class="page-title">Users</h1>
-            <p class="page-sub">All registered users</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div *ngIf="allUsers.length===0" class="card-empty">No users found.</div>
-          <table *ngIf="allUsers.length>0">
-            <thead>
-              <tr><th>Name</th><th>Email</th><th>Role</th><th>Region</th><th>Phone</th></tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let u of allUsers">
-                <td>{{ u.fullName || u.name || '-' }}</td>
-                <td>{{ u.email }}</td>
-                <td><span class="pill pill-blue">{{ u.role }}</span></td>
-                <td>{{ u.region || u.location || '-' }}</td>
-                <td>{{ u.phoneNumber || u.phone || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===== PROFILE ===== -->
-      <div *ngIf="page==='profile'">
-        <div class="page-title-row">
-          <div>
-            <h1 class="page-title">My Profile</h1>
-            <p class="page-sub">View and update your details</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-body">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Full Name</label>
-                <input class="form-control" [(ngModel)]="profile.fullName" />
-              </div>
-              <div class="form-group">
-                <label>Email</label>
-                <input class="form-control" [value]="email" disabled />
-              </div>
+        <!-- ============ ACKNOWLEDGMENTS (Admin) ============ -->
+        <div *ngIf="view==='admin-acks' && userRole==='ADMIN'" style="padding: 24px 28px;">
+            <div class="card">
+                <h3 class="card-title">All Responder Acknowledgments</h3>
+                <table class="data-table">
+                    <thead><tr><th>Disaster ID</th><th>Responder</th><th>Status</th><th>Time</th></tr></thead>
+                    <tbody>
+                        <tr *ngFor="let a of allAcks">
+                            <td><strong>#{{ a.disasterId }}</strong></td>
+                            <td>{{ a.responderEmail }}</td>
+                            <td><span class="badge badge-success">{{ a.status }}</span></td>
+                            <td style="color: var(--text-muted); font-size: 12px;">{{ formatDate(a.acknowledgedAt) }}</td>
+                        </tr>
+                        <tr *ngIf="allAcks.length===0"><td colspan="4" class="card-empty">No acknowledgments yet.</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Phone</label>
-                <input class="form-control" [(ngModel)]="profile.phoneNumber" />
-              </div>
-              <div class="form-group">
-                <label>Region</label>
-                <select class="form-control" [(ngModel)]="profile.region">
-                  <option value="">Select region</option>
-                  <option value="North">North</option><option value="South">South</option>
-                  <option value="East">East</option><option value="West">West</option>
-                  <option value="Central">Central</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Address</label>
-              <input class="form-control" [(ngModel)]="profile.address" placeholder="Your address" />
-            </div>
-            <div *ngIf="statusMsg" class="alert-msg" [ngClass]="statusType==='success'?'alert-success':'alert-error'" style="margin-top:1rem">{{ statusMsg }}</div>
-            <button class="btn-primary btn-sm" style="margin-top:1rem" (click)="updateProfile()">Save Changes</button>
-          </div>
         </div>
-      </div>
-    </div>
+
+    </main>
+</div>
   `
 })
 export class DashboardComponent implements OnInit {
-  private api = 'http://localhost:8443/api';
-  page = 'home';
-  email = '';
-  role = '';
-
-  // Data
-  myAlerts: any[] = [];
-  allTasks: any[] = [];
-  allUsers: any[] = [];
-  profile: any = {};
-  completedTasks = 0;
-
-  // Forms
-  showCreateAlert = false;
-  showCreateTask = false;
-  newAlert: any = { region: '', severity: 'MEDIUM', message: '' };
-  newTask: any = { title: '', description: '', assignedTo: '', priority: 'MEDIUM' };
-  statusMsg = '';
+  view = 'home';
+  userEmail = '';
+  userRole = '';
+  statusMessage = '';
   statusType = '';
 
-  constructor(private http: HttpClient, private router: Router) { }
+  // Data
+  stats: any = {};
+  recentEvents: any[] = [];
+  alerts: any[] = [];
+  filteredAlerts: any[] = [];
+  myAcks: any[] = [];
+  allAcks: any[] = [];
+  responders: any[] = [];
+  responderStates: any = {};
+
+  // Profile
+  profile: any = { fullName: '', phoneNumber: '', country: '', state: '', city: '' };
+  profileStates: string[] = [];
+
+  // Filters
+  alertFilter = '';
+  countries = Object.keys(COUNTRY_STATES);
+  disasterTypes = ['FLOOD', 'CYCLONE', 'EARTHQUAKE', 'FIRE', 'STORM', 'TSUNAMI', 'LANDSLIDE', 'DROUGHT', 'OTHER'];
+
+  constructor(private router: Router, private http: HttpClient, private ds: DisasterService) { }
 
   ngOnInit() {
-    const token = localStorage.getItem('jwt_token');
-    if (!token) { this.router.navigate(['/login']); return; }
-    this.email = localStorage.getItem('user_email') || '';
-    this.role = localStorage.getItem('user_role') || '';
-
-    this.loadAlerts();
-    if (this.role === 'ADMIN' || this.role === 'RESPONDER') this.loadTasks();
-    if (this.role === 'ADMIN') this.loadUsers();
+    this.userEmail = localStorage.getItem('user_email') || '';
+    this.userRole = localStorage.getItem('user_role') || '';
+    this.loadDashboard();
     this.loadProfile();
   }
 
-  // ── Alerts ──
-  loadAlerts() {
-    const url = this.role === 'ADMIN'
-      ? `${this.api}/alerts/all`
-      : `${this.api}/alerts/my-alerts`;
-    this.http.get<any[]>(url).subscribe({
-      next: (data) => { this.myAlerts = data || []; },
-      error: () => { this.myAlerts = []; }
-    });
+  loadDashboard() {
+    if (this.userRole === 'ADMIN') {
+      this.ds.getAdminStatistics().subscribe({ next: (d: any) => this.stats = d, error: () => { } });
+      this.ds.getVerifiedDisasters().subscribe({ next: (d: any) => this.recentEvents = (d || []).slice(0, 10), error: () => { } });
+      this.ds.getResponders().subscribe({
+        next: (list: any) => {
+          this.responders = (list || []).map((r: any) => ({
+            ...r, editCountry: r.country || '', editState: r.state || '', editCity: r.city || ''
+          }));
+          this.responders.forEach((r: any) => {
+            this.responderStates[r.id] = COUNTRY_STATES[r.editCountry] || [];
+          });
+        }, error: () => { }
+      });
+    }
   }
 
-  createAlert() {
-    this.http.post(`${this.api}/alerts/create`, this.newAlert).subscribe({
-      next: () => {
-        this.showStatus('Alert created successfully!', 'success');
-        this.showCreateAlert = false;
-        this.newAlert = { region: '', severity: 'MEDIUM', message: '' };
-        this.loadAlerts();
-      },
-      error: () => { this.showStatus('Failed to create alert.', 'error'); }
-    });
-  }
-
-  // ── Tasks ──
-  loadTasks() {
-    const url = this.role === 'ADMIN'
-      ? `${this.api}/tasks/all`
-      : `${this.api}/tasks/my-tasks`;
-    this.http.get<any[]>(url).subscribe({
-      next: (data) => {
-        this.allTasks = (data || []).map(t => ({ ...t, _newStatus: '' }));
-        this.completedTasks = this.allTasks.filter(t => t.status === 'COMPLETED').length;
-      },
-      error: () => { this.allTasks = []; }
-    });
-  }
-
-  createTask() {
-    this.http.post(`${this.api}/tasks/create`, this.newTask).subscribe({
-      next: () => {
-        this.showStatus('Task assigned successfully!', 'success');
-        this.showCreateTask = false;
-        this.newTask = { title: '', description: '', assignedTo: '', priority: 'MEDIUM' };
-        this.loadTasks();
-      },
-      error: () => { this.showStatus('Failed to create task.', 'error'); }
-    });
-  }
-
-  updateTaskStatus(task: any) {
-    if (!task._newStatus) return;
-    this.http.put(`${this.api}/tasks/${task.id}/status`, { status: task._newStatus }).subscribe({
-      next: () => { this.showStatus('Task updated!', 'success'); this.loadTasks(); },
-      error: () => { this.showStatus('Failed to update task.', 'error'); }
-    });
-  }
-
-  deleteTask(id: number) {
-    if (!confirm('Delete this task?')) return;
-    this.http.delete(`${this.api}/tasks/${id}`).subscribe({
-      next: () => { this.showStatus('Task deleted.', 'success'); this.loadTasks(); },
-      error: () => { this.showStatus('Failed to delete.', 'error'); }
-    });
-  }
-
-  // ── Users (Admin) ──
-  loadUsers() {
-    this.http.get<any[]>(`${this.api}/users/all`).subscribe({
-      next: (data) => { this.allUsers = data || []; },
-      error: () => { this.allUsers = []; }
-    });
-  }
-
-  // ── Profile ──
   loadProfile() {
-    this.http.get(`${this.api}/profile/my`).subscribe({
-      next: (data: any) => { this.profile = data || {}; },
+    this.ds.getMyProfile().subscribe({
+      next: (p: any) => {
+        this.profile = {
+          fullName: p.fullName || '', phoneNumber: p.phoneNumber || '',
+          country: p.country || '', state: p.state || '', city: p.city || ''
+        };
+        this.profileStates = COUNTRY_STATES[this.profile.country] || [];
+      }, error: () => { }
+    });
+  }
+
+  saveProfile() {
+    this.ds.updateProfile(this.profile).subscribe({
+      next: () => this.showStatus('Profile updated.', 'success'),
+      error: () => this.showStatus('Failed to save profile.', 'error')
+    });
+  }
+
+  onProfileCountryChange() {
+    this.profileStates = COUNTRY_STATES[this.profile.country] || [];
+    this.profile.state = '';
+  }
+
+  onResponderCountryChange(r: any) {
+    this.responderStates[r.id] = COUNTRY_STATES[r.editCountry] || [];
+    r.editState = '';
+  }
+
+  saveResponderRegion(r: any) {
+    this.ds.adminUpdateProfile(r.userId || r.id, {
+      country: r.editCountry, state: r.editState, city: r.editCity
+    }).subscribe({
+      next: () => this.showStatus('Responder region updated.', 'success'),
+      error: () => this.showStatus('Failed to update.', 'error')
+    });
+  }
+
+  loadAlerts() {
+    this.ds.getMyAlerts().subscribe({
+      next: (d: any) => { this.alerts = d || []; this.applyAlertFilter(); },
       error: () => { }
     });
+    if (this.userRole === 'RESPONDER') {
+      this.ds.getMyAcknowledgments().subscribe({
+        next: (d: any) => this.myAcks = d || [],
+        error: () => { }
+      });
+    }
   }
 
-  updateProfile() {
-    this.http.put(`${this.api}/profile/update`, this.profile).subscribe({
-      next: () => { this.showStatus('Profile updated!', 'success'); },
-      error: () => { this.showStatus('Failed to update profile.', 'error'); }
+  applyAlertFilter() {
+    this.filteredAlerts = this.alertFilter
+      ? this.alerts.filter((a: any) => a.disasterType === this.alertFilter)
+      : [...this.alerts];
+  }
+
+  acknowledgeAlert(a: any) {
+    this.ds.acknowledgeAlert(a.disasterId).subscribe({
+      next: () => {
+        this.myAcks.push({ disasterId: a.disasterId });
+        this.showStatus('Alert acknowledged.', 'success');
+      },
+      error: (err: any) => this.showStatus(err.error?.message || 'Failed.', 'error')
     });
   }
 
-  // ── Navigation ──
-  goToMonitor() { this.router.navigate(['/disaster-monitor']); }
+  isAcknowledged(disasterId: number): boolean {
+    return this.myAcks.some((a: any) => a.disasterId === disasterId);
+  }
 
-  logout() {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('user_email');
-    this.router.navigate(['/login']);
+  loadAcks() {
+    this.ds.getAllAcknowledgments().subscribe({ next: (d: any) => this.allAcks = d || [], error: () => { } });
+  }
+
+  // Helpers
+  formatDate(d: string): string {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  sevBadge(s: string): string {
+    if (s === 'CRITICAL' || s === 'HIGH') return 'badge-danger';
+    if (s === 'MEDIUM') return 'badge-warning';
+    return 'badge-success';
+  }
+
+  getSevColor(s: string): string {
+    if (s === 'CRITICAL') return '#F87171';
+    if (s === 'HIGH') return '#F97316';
+    if (s === 'MEDIUM') return '#FBBF24';
+    return '#34D399';
+  }
+
+  getSafetyTip(type: string): string {
+    const tips: any = {
+      'EARTHQUAKE': 'Drop, Cover, and Hold On. Move away from windows and heavy objects.',
+      'FLOOD': 'Move to higher ground immediately. Avoid walking or driving through flood waters.',
+      'CYCLONE': 'Stay indoors away from windows. Stock up on essentials.',
+      'STORM': 'Stay indoors. Unplug electronics. Avoid open areas.',
+      'FIRE': 'Evacuate immediately. Stay low to avoid smoke inhalation.',
+      'TSUNAMI': 'Move to high ground immediately. Stay away from the coast.',
+      'LANDSLIDE': 'Move away from the path of debris. Evacuate if ordered.',
+      'DROUGHT': 'Conserve water. Follow local water-use restrictions.'
+    };
+    return tips[type] || 'Stay alert and follow local authority instructions.';
   }
 
   showStatus(msg: string, type: string) {
-    this.statusMsg = msg;
+    this.statusMessage = msg;
     this.statusType = type;
-    setTimeout(() => { this.statusMsg = ''; }, 3000);
+    setTimeout(() => { this.statusMessage = ''; }, 3500);
+  }
+
+  logout() {
+    localStorage.clear();
+    this.router.navigate(['/login']);
   }
 }

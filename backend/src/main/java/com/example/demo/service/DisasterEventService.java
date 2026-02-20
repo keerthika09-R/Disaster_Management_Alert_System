@@ -22,77 +22,56 @@ public class DisasterEventService {
 
     // ==================== PUBLIC APIs ====================
 
-    /**
-     * Get all VERIFIED (public) events with optional filters
-     */
     public List<DisasterEvent> getVerifiedEvents(DisasterType type, SeverityLevel severity,
-            String location, LocalDateTime startDate,
-            LocalDateTime endDate) {
+            String location, LocalDateTime startDate, LocalDateTime endDate) {
         return disasterEventRepository.findWithFilters(
                 EventStatus.VERIFIED, type, severity, location, startDate, endDate);
     }
 
-    /**
-     * Get all verified events (no filters)
-     */
     public List<DisasterEvent> getAllVerifiedEvents() {
         return disasterEventRepository.findByStatusOrderByEventTimeDesc(EventStatus.VERIFIED);
     }
 
     /**
-     * Get a single event by ID
+     * Get verified events for a specific country+state (region-based alert)
      */
+    public List<DisasterEvent> getVerifiedEventsByRegion(String country, String state) {
+        return disasterEventRepository.findByStatusAndCountryAndStateOrderByEventTimeDesc(
+                EventStatus.VERIFIED, country, state);
+    }
+
     public Optional<DisasterEvent> getEventById(Long id) {
         return disasterEventRepository.findById(id);
     }
 
     // ==================== ADMIN APIs ====================
 
-    /**
-     * Get all PENDING events for admin review
-     */
     public List<DisasterEvent> getPendingEvents() {
         return disasterEventRepository.findByStatusOrderByCreatedAtDesc(EventStatus.PENDING);
     }
 
-    /**
-     * Get ALL events regardless of status (admin view)
-     */
     public List<DisasterEvent> getAllEvents() {
         return disasterEventRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    /**
-     * Approve (verify) an event
-     */
     public DisasterEvent approveEvent(Long id, String approverEmail) {
         DisasterEvent event = disasterEventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disaster event not found with id: " + id));
-
         event.setStatus(EventStatus.VERIFIED);
         event.setApprovedBy(approverEmail);
         event.setApprovedAt(LocalDateTime.now());
-
         return disasterEventRepository.save(event);
     }
 
-    /**
-     * Reject an event
-     */
     public DisasterEvent rejectEvent(Long id, String approverEmail) {
         DisasterEvent event = disasterEventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disaster event not found with id: " + id));
-
         event.setStatus(EventStatus.REJECTED);
         event.setApprovedBy(approverEmail);
         event.setApprovedAt(LocalDateTime.now());
-
         return disasterEventRepository.save(event);
     }
 
-    /**
-     * Edit alert details before broadcast
-     */
     public DisasterEvent updateEvent(Long id, DisasterEventRequest request) {
         DisasterEvent event = disasterEventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disaster event not found with id: " + id));
@@ -101,25 +80,26 @@ public class DisasterEventService {
             event.setTitle(request.getTitle());
         if (request.getDescription() != null)
             event.setDescription(request.getDescription());
-        if (request.getDisasterType() != null) {
+        if (request.getDisasterType() != null)
             event.setDisasterType(DisasterType.valueOf(request.getDisasterType()));
-        }
-        if (request.getSeverity() != null) {
+        if (request.getSeverity() != null)
             event.setSeverity(SeverityLevel.valueOf(request.getSeverity()));
-        }
         if (request.getLatitude() != null)
             event.setLatitude(request.getLatitude());
         if (request.getLongitude() != null)
             event.setLongitude(request.getLongitude());
         if (request.getLocationName() != null)
             event.setLocationName(request.getLocationName());
+        if (request.getCountry() != null)
+            event.setCountry(request.getCountry());
+        if (request.getState() != null)
+            event.setState(request.getState());
+        if (request.getCity() != null)
+            event.setCity(request.getCity());
 
         return disasterEventRepository.save(event);
     }
 
-    /**
-     * Admin can manually create a disaster event
-     */
     public DisasterEvent createEvent(DisasterEventRequest request, String createdBy) {
         DisasterEvent event = new DisasterEvent();
         event.setTitle(request.getTitle());
@@ -129,26 +109,22 @@ public class DisasterEventService {
         event.setLatitude(request.getLatitude());
         event.setLongitude(request.getLongitude());
         event.setLocationName(request.getLocationName());
+        event.setCountry(request.getCountry());
+        event.setState(request.getState());
+        event.setCity(request.getCity());
         event.setSource(request.getSource() != null ? request.getSource() : "MANUAL");
         event.setEventTime(LocalDateTime.now());
         event.setCreatedBy(createdBy);
         event.setStatus(EventStatus.PENDING);
-
         return disasterEventRepository.save(event);
     }
 
-    /**
-     * Delete an event
-     */
     public void deleteEvent(Long id) {
         disasterEventRepository.deleteById(id);
     }
 
     // ==================== STATISTICS ====================
 
-    /**
-     * Get dashboard statistics
-     */
     public Map<String, Object> getStatistics() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -162,7 +138,6 @@ public class DisasterEventService {
         stats.put("verifiedEvents", verified);
         stats.put("rejectedEvents", rejected);
 
-        // Count by type
         Map<String, Long> byType = new HashMap<>();
         try {
             List<Object[]> typeCounts = disasterEventRepository.countByDisasterType();
@@ -170,11 +145,9 @@ public class DisasterEventService {
                 byType.put(row[0].toString(), (Long) row[1]);
             }
         } catch (Exception e) {
-            // ignore if no data
-        }
+            /* ignore */ }
         stats.put("byType", byType);
 
-        // Count by severity
         Map<String, Long> bySeverity = new HashMap<>();
         try {
             List<Object[]> severityCounts = disasterEventRepository.countBySeverity();
@@ -182,8 +155,7 @@ public class DisasterEventService {
                 bySeverity.put(row[0].toString(), (Long) row[1]);
             }
         } catch (Exception e) {
-            // ignore if no data
-        }
+            /* ignore */ }
         stats.put("bySeverity", bySeverity);
 
         return stats;

@@ -11,14 +11,22 @@ public class Alert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long disasterId; // link to the disaster event
+
     @Column(nullable = false)
-    private String region;
+    private String region; // kept for backward compat
+
+    private String country;
+    private String state;
+    private String city;
 
     @Column(nullable = false)
     private String message;
 
     @Column(nullable = false)
-    private String severity; // HIGH, MEDIUM, LOW
+    private String severity; // HIGH, MEDIUM, LOW, CRITICAL
+
+    private String disasterType;
 
     @Column(nullable = false)
     private String createdBy;
@@ -47,12 +55,44 @@ public class Alert {
         this.id = id;
     }
 
+    public Long getDisasterId() {
+        return disasterId;
+    }
+
+    public void setDisasterId(Long disasterId) {
+        this.disasterId = disasterId;
+    }
+
     public String getRegion() {
         return region;
     }
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getMessage() {
@@ -69,6 +109,14 @@ public class Alert {
 
     public void setSeverity(String severity) {
         this.severity = severity;
+    }
+
+    public String getDisasterType() {
+        return disasterType;
+    }
+
+    public void setDisasterType(String disasterType) {
+        this.disasterType = disasterType;
     }
 
     public String getCreatedBy() {

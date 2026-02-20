@@ -27,7 +27,6 @@ public class AlertController {
         String message = request.get("message");
         String severity = request.get("severity");
         String createdBy = authentication.getName();
-
         return ResponseEntity.ok(alertService.createAlert(region, message, severity, createdBy));
     }
 
@@ -35,6 +34,14 @@ public class AlertController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Alert>> getAlertsByRegion(@PathVariable String region) {
         return ResponseEntity.ok(alertService.getAlertsByRegion(region));
+    }
+
+    @GetMapping("/by-location")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Alert>> getAlertsByCountryAndState(
+            @RequestParam String country,
+            @RequestParam String state) {
+        return ResponseEntity.ok(alertService.getAlertsByCountryAndState(country, state));
     }
 
     @GetMapping("/all")

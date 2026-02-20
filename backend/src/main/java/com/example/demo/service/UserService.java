@@ -44,29 +44,35 @@ public class UserService {
     public List<Map<String, Object>> getAllUsersWithProfiles() {
         List<User> users = userRepository.findAll();
         List<Map<String, Object>> result = new ArrayList<>();
-        
+
         for (User user : users) {
             Map<String, Object> userMap = new HashMap<>();
             userMap.put("id", user.getId());
             userMap.put("email", user.getEmail());
             userMap.put("role", user.getRole());
-            
+
             // Try to get user profile
             Optional<UserProfile> profile = userProfileRepository.findByUser(user);
             if (profile.isPresent()) {
                 UserProfile p = profile.get();
                 userMap.put("fullName", p.getFullName());
                 userMap.put("phoneNumber", p.getPhoneNumber());
+                userMap.put("country", p.getCountry());
+                userMap.put("state", p.getState());
+                userMap.put("city", p.getCity());
                 userMap.put("region", p.getRegion());
             } else {
                 userMap.put("fullName", null);
                 userMap.put("phoneNumber", null);
+                userMap.put("country", null);
+                userMap.put("state", null);
+                userMap.put("city", null);
                 userMap.put("region", null);
             }
-            
+
             result.add(userMap);
         }
-        
+
         return result;
     }
 
@@ -76,22 +82,25 @@ public class UserService {
         if (user.isEmpty()) {
             return null;
         }
-        
+
         Map<String, Object> userMap = new HashMap<>();
         User u = user.get();
         userMap.put("id", u.getId());
         userMap.put("email", u.getEmail());
         userMap.put("role", u.getRole());
-        
+
         // Get user profile
         Optional<UserProfile> profile = userProfileRepository.findByUser(u);
         if (profile.isPresent()) {
             UserProfile p = profile.get();
             userMap.put("fullName", p.getFullName());
             userMap.put("phoneNumber", p.getPhoneNumber());
+            userMap.put("country", p.getCountry());
+            userMap.put("state", p.getState());
+            userMap.put("city", p.getCity());
             userMap.put("region", p.getRegion());
         }
-        
+
         return userMap;
     }
 
@@ -99,10 +108,10 @@ public class UserService {
     public List<String> getAllLocations() {
         List<UserProfile> profiles = userProfileRepository.findAll();
         Set<String> locations = profiles.stream()
-            .map(UserProfile::getRegion)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-        
+                .map(UserProfile::getRegion)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         return new ArrayList<>(locations);
     }
 
@@ -110,7 +119,7 @@ public class UserService {
     public List<Map<String, Object>> getUsersByLocation(String location) {
         List<UserProfile> profiles = userProfileRepository.findByRegion(location);
         List<Map<String, Object>> result = new ArrayList<>();
-        
+
         for (UserProfile profile : profiles) {
             User user = profile.getUser();
             if (user != null) {
@@ -124,7 +133,7 @@ public class UserService {
                 result.add(userMap);
             }
         }
-        
+
         return result;
     }
 }

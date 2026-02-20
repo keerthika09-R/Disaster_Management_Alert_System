@@ -20,4 +20,9 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     List<UserProfile> findByUser_Role(String role);
 
     List<UserProfile> findByUser_RoleAndRegion(String role, String region);
+
+    // Region-based queries for country+state matching
+    List<UserProfile> findByCountryAndState(String country, String state);
+
+    List<UserProfile> findByUser_RoleAndCountryAndState(String role, String country, String state);
 }
