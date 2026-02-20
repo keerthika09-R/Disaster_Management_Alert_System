@@ -1,322 +1,297 @@
-<div class="dashboard-layout">
-    <!-- Sidebar -->
+<div class="app-container">
+    <!-- Fixed Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h2>⚡ DMAS</h2>
-            <span class="sidebar-subtitle">Alert & Response System</span>
+            <h1>DMAS</h1>
+            <p>Alert & Response System</p>
         </div>
         <nav class="sidebar-nav">
-            <a class="nav-item" routerLink="/dashboard">📊 Dashboard</a>
-            <a class="nav-item active">🌍 Disaster Monitor</a>
-            <a class="nav-item nav-logout" (click)="goBack()">← Back</a>
+            <a class="nav-item" routerLink="/dashboard">Dashboard</a>
+            <a class="nav-item active">Disaster Monitor</a>
         </nav>
+        <div class="nav-logout" (click)="goBack()">← Back to Dashboard</div>
     </aside>
 
-    <!-- Main -->
-    <main class="main-content">
-        <div class="top-bar">
-            <h1 class="page-title">
-                <span *ngIf="activeTab==='pending'">Pending Review</span>
-                <span *ngIf="activeTab==='verified'">Verified Alerts</span>
-                <span *ngIf="activeTab==='all'">All Events</span>
-                <span *ngIf="activeTab==='create'">Report New Event</span>
-            </h1>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn btn-sm btn-secondary" (click)="syncFromApi()" [disabled]="syncing">
-                    {{ syncing ? 'Syncing...' : '🔄 Sync APIs' }}
+    <!-- Main Content -->
+    <main class="main-panel">
+        <header class="top-header">
+            <h2>Disaster Monitor</h2>
+        </header>
+
+        <div class="content area">
+
+            <div *ngIf="statusMessage" class="card"
+                [style.background]="statusType==='success' ? 'var(--success-bg)' : 'var(--danger-bg)'"
+                [style.color]="statusType==='success' ? 'var(--success)' : 'var(--danger)'"
+                style="padding: 12px; margin-bottom: 24px; border: 1px solid currentColor;">
+                {{ statusMessage }}
+            </div>
+
+            <!-- Tab Navigation (Professional Segmented Style) -->
+            <div
+                style="display: flex; gap: 8px; margin-bottom: 24px; background: var(--surface); padding: 8px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); width: fit-content;">
+                <button *ngFor="let tab of tabs" class="btn btn-sm" [class.btn-primary]="activeTab===tab.key"
+                    [class.btn-outline]="activeTab!==tab.key" (click)="activeTab=tab.key; loadTab()">
+                    {{ tab.label }}
+                    <span *ngIf="tab.count !== undefined" style="margin-left: 6px; opacity: 0.8;">[{{ tab.count
+                        }}]</span>
                 </button>
             </div>
-        </div>
 
-        <div *ngIf="statusMessage" class="status-bar" [ngClass]="statusType">{{ statusMessage }}</div>
-
-        <!-- Tab bar -->
-        <div
-            style="display: flex; gap: 2px; padding: 0 28px; background: var(--bg-surface); border-bottom: 1px solid var(--border);">
-            <button *ngFor="let tab of tabs" class="tab-btn" [class.active]="activeTab===tab.key"
-                (click)="activeTab=tab.key; loadTab()">
-                {{ tab.label }}
-                <span *ngIf="tab.count !== undefined" class="tab-count">{{ tab.count }}</span>
-            </button>
-        </div>
-
-        <!-- ============ PENDING TAB ============ -->
-        <div *ngIf="activeTab==='pending'" style="padding: 24px 28px;">
-            <!-- Filters -->
-            <div class="filter-bar">
-                <div class="filter-row">
-                    <select class="filter-input" [(ngModel)]="filterType" (ngModelChange)="applyFilters()">
-                        <option value="">All Types</option>
-                        <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
-                    </select>
-                    <select class="filter-input" [(ngModel)]="filterSeverity" (ngModelChange)="applyFilters()">
-                        <option value="">All Severities</option>
-                        <option *ngFor="let s of severities" [value]="s">{{ s }}</option>
-                    </select>
-                    <input class="filter-input filter-input-wide" placeholder="Search by title, country, state..."
-                        [(ngModel)]="filterSearch" (ngModelChange)="applyFilters()" />
-                </div>
-            </div>
-
-            <!-- Event cards -->
-            <div *ngFor="let e of paginatedEvents" class="event-review-card">
-                <div class="event-review-header">
-                    <strong>{{ e.title }}</strong>
-                    <div style="display: flex; gap: 6px;">
-                        <span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span>
-                        <span class="badge badge-neutral">{{ e.source }}</span>
-                    </div>
-                </div>
-                <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">{{ e.description | slice:0:180 }}{{
-                    (e.description || '').length > 180 ? '...' : '' }}</p>
-                <div class="event-meta">
-                    <span>📍 {{ e.country || 'Unknown' }} · {{ e.state || '-' }} · {{ e.city || '-' }}</span>
-                    <span>🏷️ {{ e.disasterType }}</span>
-                    <span>🕑 {{ formatDate(e.eventTime) }}</span>
-                </div>
-                <div class="event-actions">
-                    <button class="btn btn-sm btn-success" (click)="approve(e)">✓ Verify & Publish</button>
-                    <button class="btn btn-sm btn-secondary" (click)="openEditModal(e)">✏ Edit</button>
-                    <button class="btn btn-sm btn-danger" (click)="reject(e)">✕ Reject</button>
-                </div>
-            </div>
-
-            <div *ngIf="filteredEvents.length===0" class="card" style="text-align: center; padding: 40px;">
-                <p style="color: var(--text-muted);">No pending events matching filters.</p>
-            </div>
-
-            <!-- Pagination -->
-            <div *ngIf="totalPages > 1" class="pagination">
-                <button class="pg-btn" (click)="goToPage(currentPage-1)" [disabled]="currentPage===1">‹ Prev</button>
-                <button *ngFor="let p of pageNumbers" class="pg-btn" [class.active]="p===currentPage"
-                    (click)="goToPage(p)">{{ p }}</button>
-                <button class="pg-btn" (click)="goToPage(currentPage+1)" [disabled]="currentPage===totalPages">Next
-                    ›</button>
-            </div>
-        </div>
-
-        <!-- ============ VERIFIED TAB ============ -->
-        <div *ngIf="activeTab==='verified'" style="padding: 24px 28px;">
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Severity</th>
-                            <th>Country</th>
-                            <th>State</th>
-                            <th>Source</th>
-                            <th>Verified At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let e of verifiedEvents">
-                            <td><strong>{{ e.title }}</strong></td>
-                            <td>{{ e.disasterType }}</td>
-                            <td><span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span></td>
-                            <td>{{ e.country || '-' }}</td>
-                            <td>{{ e.state || '-' }}</td>
-                            <td>{{ e.source }}</td>
-                            <td style="color: var(--text-muted); font-size: 12px;">{{ formatDate(e.approvedAt ||
-                                e.eventTime) }}</td>
-                        </tr>
-                        <tr *ngIf="verifiedEvents.length===0">
-                            <td colspan="7" class="card-empty">No verified events yet.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ============ ALL TAB ============ -->
-        <div *ngIf="activeTab==='all'" style="padding: 24px 28px;">
-
-            <!-- Filters -->
-            <div class="filter-bar" style="margin-bottom: 16px;">
-                <div class="filter-row">
-                    <select class="filter-input" [(ngModel)]="allFilterType" (ngModelChange)="applyAllFilters()">
-                        <option value="">All Types</option>
-                        <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
-                    </select>
-                    <select class="filter-input" [(ngModel)]="allFilterStatus" (ngModelChange)="applyAllFilters()">
-                        <option value="">All Status</option>
-                        <option value="PENDING">PENDING</option>
-                        <option value="VERIFIED">VERIFIED</option>
-                        <option value="REJECTED">REJECTED</option>
-                    </select>
-                    <input class="filter-input filter-input-wide" placeholder="Search..." [(ngModel)]="allFilterSearch"
-                        (ngModelChange)="applyAllFilters()" />
-                </div>
-            </div>
-
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Severity</th>
-                            <th>Status</th>
-                            <th>Country</th>
-                            <th>State</th>
-                            <th>Source</th>
-                            <th>Time</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let e of paginatedAllEvents">
-                            <td><strong>{{ e.title }}</strong></td>
-                            <td>{{ e.disasterType }}</td>
-                            <td><span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span></td>
-                            <td><span class="badge" [ngClass]="statusBadge(e.status)">{{ e.status }}</span></td>
-                            <td>{{ e.country || '-' }}</td>
-                            <td>{{ e.state || '-' }}</td>
-                            <td>{{ e.source }}</td>
-                            <td style="color: var(--text-muted); font-size: 12px;">{{ formatDate(e.eventTime) }}</td>
-                            <td>
-                                <div style="display: flex; gap: 4px;">
-                                    <button class="btn btn-xs btn-secondary" (click)="openEditModal(e)">Edit</button>
-                                    <button class="btn btn-xs btn-danger" (click)="deleteEvent(e)">Del</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr *ngIf="filteredAllEvents.length===0">
-                            <td colspan="9" class="card-empty">No events found.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <div *ngIf="allTotalPages > 1" class="pagination">
-                <button class="pg-btn" (click)="allGoToPage(allCurrentPage-1)" [disabled]="allCurrentPage===1">‹
-                    Prev</button>
-                <button *ngFor="let p of allPageNumbers" class="pg-btn" [class.active]="p===allCurrentPage"
-                    (click)="allGoToPage(p)">{{ p }}</button>
-                <button class="pg-btn" (click)="allGoToPage(allCurrentPage+1)"
-                    [disabled]="allCurrentPage===allTotalPages">Next ›</button>
-            </div>
-        </div>
-
-        <!-- ============ CREATE TAB ============ -->
-        <div *ngIf="activeTab==='create'" style="padding: 24px 28px;">
-            <div class="card" style="max-width: 560px;">
-                <h3 class="card-title">Report a New Disaster</h3>
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" [(ngModel)]="newEvent.title"
-                        placeholder="Earthquake in California, Flood in Mumbai..." />
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Disaster Type</label>
-                        <select [(ngModel)]="newEvent.disasterType">
+            <!-- ============ PENDING FOR REVIEW ============ -->
+            <div *ngIf="activeTab==='pending'">
+                <!-- Filters -->
+                <div class="card" style="padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                        <span class="summary-label">Filter:</span>
+                        <select class="form-input" style="width: 160px; height: 36px;" [(ngModel)]="filterType"
+                            (ngModelChange)="applyFilters()">
+                            <option value="">All Types</option>
                             <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Severity</label>
-                        <select [(ngModel)]="newEvent.severity">
+                        <select class="form-input" style="width: 140px; height: 36px;" [(ngModel)]="filterSeverity"
+                            (ngModelChange)="applyFilters()">
+                            <option value="">All Severities</option>
                             <option *ngFor="let s of severities" [value]="s">{{ s }}</option>
                         </select>
+                        <input class="form-input" style="flex: 1; height: 36px;" placeholder="Search..."
+                            [(ngModel)]="filterSearch" (ngModelChange)="applyFilters()" />
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Country</label>
-                        <select [(ngModel)]="newEvent.country" (ngModelChange)="onNewCountryChange()">
-                            <option value="">Select</option>
-                            <option *ngFor="let c of countryList" [value]="c">{{ c }}</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>State</label>
-                        <select [(ngModel)]="newEvent.state">
-                            <option value="">Select</option>
-                            <option *ngFor="let s of newEventStates" [value]="s">{{ s }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>City</label>
-                    <input type="text" [(ngModel)]="newEvent.city" placeholder="City name" />
-                </div>
-                <div class="form-group">
-                    <label>Location Name</label>
-                    <input type="text" [(ngModel)]="newEvent.locationName" placeholder="e.g. San Francisco Bay Area" />
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Latitude</label>
-                        <input type="number" [(ngModel)]="newEvent.latitude" />
-                    </div>
-                    <div class="form-group">
-                        <label>Longitude</label>
-                        <input type="number" [(ngModel)]="newEvent.longitude" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea [(ngModel)]="newEvent.description" rows="4"
-                        placeholder="Describe the disaster event..."></textarea>
-                </div>
-                <button class="btn btn-primary" (click)="createEvent()" style="margin-top: 8px;">Submit Event</button>
-            </div>
-        </div>
 
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Severity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let e of paginatedEvents">
+                                    <td>
+                                        <div style="font-weight: 700; color: var(--primary);">#{{ e.id }}</div>
+                                        <div style="font-size: 11px;">{{ e.source }}</div>
+                                    </td>
+                                    <td style="max-width: 300px;">
+                                        <div style="font-weight: 600;">{{ e.title }}</div>
+                                        <div
+                                            style="font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {{ e.description }}</div>
+                                    </td>
+                                    <td>{{ e.disasterType }}</td>
+                                    <td>{{ e.country || '-' }} <span *ngIf="e.state">· {{ e.state }}</span></td>
+                                    <td><span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 6px;">
+                                            <button class="btn btn-sm btn-primary"
+                                                style="background-color: var(--success);"
+                                                (click)="approve(e)">Verify</button>
+                                            <button class="btn btn-sm btn-outline"
+                                                (click)="openEditModal(e)">Edit</button>
+                                            <button class="btn btn-sm btn-outline"
+                                                style="color: var(--danger); border-color: var(--danger);"
+                                                (click)="reject(e)">Reject</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="filteredEvents.length===0">
+                                    <td colspan="6"
+                                        style="text-align: center; padding: 40px; color: var(--text-muted);">No pending
+                                        events.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div *ngIf="totalPages > 1" style="display: flex; justify-content: center; gap: 4px; margin-top: 24px;">
+                    <button class="btn btn-sm btn-outline" (click)="goToPage(currentPage-1)"
+                        [disabled]="currentPage===1">Prev</button>
+                    <button *ngFor="let p of pageNumbers" class="btn btn-sm btn-outline"
+                        [class.btn-primary]="p===currentPage" (click)="goToPage(p)">{{ p }}</button>
+                    <button class="btn btn-sm btn-outline" (click)="goToPage(currentPage+1)"
+                        [disabled]="currentPage===totalPages">Next</button>
+                </div>
+            </div>
+
+            <!-- ============ VERIFIED ALERTS ============ -->
+            <div *ngIf="activeTab==='verified'">
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Region</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let e of verifiedEvents">
+                                    <td><strong>#{{ e.id }}</strong></td>
+                                    <td><strong>{{ e.title }}</strong></td>
+                                    <td>{{ e.disasterType }}</td>
+                                    <td><span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span>
+                                    </td>
+                                    <td>{{ e.country || '-' }} · {{ e.state || '-' }}</td>
+                                    <td style="color: var(--text-muted); font-size: 11px;">{{ formatDate(e.approvedAt ||
+                                        e.eventTime) }}</td>
+                                </tr>
+                                <tr *ngIf="verifiedEvents.length===0">
+                                    <td colspan="6"
+                                        style="text-align: center; padding: 60px; color: var(--text-muted);">No verified
+                                        events found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ ALL EVENTS ============ -->
+            <div *ngIf="activeTab==='all'">
+                <div class="card" style="padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                        <span class="summary-label">Filter:</span>
+                        <select class="form-input" style="width: 150px; height: 36px;" [(ngModel)]="allFilterStatus"
+                            (ngModelChange)="applyAllFilters()">
+                            <option value="">All Statuses</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="VERIFIED">VERIFIED</option>
+                            <option value="REJECTED">REJECTED</option>
+                        </select>
+                        <input class="form-input" style="flex: 1; height: 36px;" placeholder="Search..."
+                            [(ngModel)]="allFilterSearch" (ngModelChange)="applyAllFilters()" />
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Location</th>
+                                    <th>Source</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let e of paginatedAllEvents">
+                                    <td><strong>{{ e.title }}</strong></td>
+                                    <td>{{ e.disasterType }}</td>
+                                    <td><span class="badge" [ngClass]="sevBadge(e.severity)">{{ e.severity }}</span>
+                                    </td>
+                                    <td><span class="badge" [ngClass]="statusBadge(e.status)">{{ e.status }}</span></td>
+                                    <td>{{ e.country || '-' }}</td>
+                                    <td>{{ e.source }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 6px;">
+                                            <button class="btn btn-sm btn-outline" (click)="deleteEvent(e)"
+                                                style="color: var(--danger); border-color: var(--danger);">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ REPORT NEW EVENT ============ -->
+            <div *ngIf="activeTab==='create'">
+                <div class="card" style="max-width: 600px;">
+                    <div class="card-title">Report New Disaster</div>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input class="form-input" type="text" [(ngModel)]="newEvent.title" placeholder="Event title" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select class="form-input" [(ngModel)]="newEvent.disasterType">
+                                <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Severity</label>
+                            <select class="form-input" [(ngModel)]="newEvent.severity">
+                                <option *ngFor="let s of severities" [value]="s">{{ s }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <select class="form-input" [(ngModel)]="newEvent.country"
+                                (ngModelChange)="onNewCountryChange()">
+                                <option *ngFor="let c of countryList" [value]="c">{{ c }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <select class="form-input" [(ngModel)]="newEvent.state" [disabled]="!newEvent.country">
+                                <option *ngFor="let s of newEventStates" [value]="s">{{ s }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input" [(ngModel)]="newEvent.description" rows="5"
+                            placeholder="Description..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 12px;" (click)="createEvent()">Submit
+                        Event</button>
+                </div>
+            </div>
+
+        </div>
     </main>
 </div>
 
 <!-- ============ EDIT MODAL ============ -->
-<div *ngIf="editModal" class="modal-overlay" (click)="editModal=false">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-        <h2 class="modal-title">Edit Event</h2>
+<div *ngIf="editModal"
+    style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100;">
+    <div class="card" style="width: 500px; padding: 32px; box-shadow: var(--shadow);">
+        <h3 class="card-title">Edit Event</h3>
         <div class="form-group">
-            <label>Title</label>
-            <input type="text" [(ngModel)]="editData.title" />
+            <label class="form-label">Title</label>
+            <input class="form-input" type="text" [(ngModel)]="editData.title" />
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label>Type</label>
-                <select [(ngModel)]="editData.disasterType">
+                <label class="form-label">Type</label>
+                <select class="form-input" [(ngModel)]="editData.disasterType">
                     <option *ngFor="let t of disasterTypes" [value]="t">{{ t }}</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Severity</label>
-                <select [(ngModel)]="editData.severity">
+                <label class="form-label">Severity</label>
+                <select class="form-input" [(ngModel)]="editData.severity">
                     <option *ngFor="let s of severities" [value]="s">{{ s }}</option>
                 </select>
             </div>
         </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Country</label>
-                <select [(ngModel)]="editData.country" (ngModelChange)="onEditCountryChange()">
-                    <option value="">Select</option>
-                    <option *ngFor="let c of countryList" [value]="c">{{ c }}</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>State</label>
-                <select [(ngModel)]="editData.state">
-                    <option value="">Select</option>
-                    <option *ngFor="let s of editStates" [value]="s">{{ s }}</option>
-                </select>
-            </div>
-        </div>
         <div class="form-group">
-            <label>City</label>
-            <input type="text" [(ngModel)]="editData.city" />
+            <label class="form-label">Description</label>
+            <textarea class="form-input" [(ngModel)]="editData.description" rows="4"></textarea>
         </div>
-        <div class="form-group">
-            <label>Description</label>
-            <textarea [(ngModel)]="editData.description" rows="3"></textarea>
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-secondary" (click)="editModal=false">Cancel</button>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+            <button class="btn btn-outline" (click)="editModal=false">Cancel</button>
             <button class="btn btn-primary" (click)="saveEdit()">Save Changes</button>
         </div>
     </div>

@@ -133,4 +133,8 @@ export class DisasterService {
     adminUpdateProfile(userId: number, data: any): Observable<any> {
         return this.http.put(`${this.baseUrl}/profile/admin/update/${userId}`, data);
     }
+
+    getCitizens(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/profile/role/CITIZEN`);
+    }
 }

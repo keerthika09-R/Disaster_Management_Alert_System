@@ -5,46 +5,51 @@ import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-login',
   template: `
-    <div class="auth-page">
-      <div class="auth-card">
-        <div class="auth-header">
-          <div class="auth-logo">⚡</div>
-          <h1>Disaster Management</h1>
-          <p>Alert & Response System</p>
+    <div class="auth-split">
+      <div class="auth-sidebar">
+        <div class="auth-sidebar-content">
+          <div class="auth-logo-text">DMAS</div>
+          <div class="auth-subtitle">Disaster Monitoring & Alert System</div>
+          <p class="auth-desc">
+            A secure, authoritative platform for critical event monitoring and region-based emergency broadcasting.
+          </p>
         </div>
+      </div>
 
-        <form (ngSubmit)="login()">
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input class="form-input" type="email" placeholder="you@example.com"
-              [(ngModel)]="email" name="email" required />
+      <div class="auth-form-panel">
+        <div class="auth-form-card">
+          <h2>Sign In</h2>
+          
+          <form (ngSubmit)="login()">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input class="form-input" type="email" placeholder="e.g. administrator@dmas.gov" 
+                [(ngModel)]="email" name="email" required />
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label class="form-label">Password</label>
+              <input class="form-input" type="password" placeholder="Enter your password" 
+                [(ngModel)]="password" name="password" required />
+            </div>
+
+            <div *ngIf="error" class="card" style="padding: 12px; background: var(--danger-bg); color: var(--danger); border-color: var(--danger); margin-bottom: 20px; font-size: 0.85rem;">
+              {{ error }}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" [disabled]="loading" style="height: 44px;">
+              {{ loading ? 'Authenticating...' : 'Sign In to Dashboard' }}
+            </button>
+          </form>
+
+          <div style="margin-top: 24px; text-align: center; font-size: 0.9rem;">
+            <span style="color: var(--text-muted);">New to the system?</span> 
+            <a routerLink="/register" style="color: var(--primary); font-weight: 600; margin-left: 6px;">Create Account</a>
           </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input class="form-input" type="password" placeholder="Enter your password"
-              [(ngModel)]="password" name="password" required />
-          </div>
-
-          <div *ngIf="error" class="msg msg-error">{{ error }}</div>
-
-          <button type="submit" class="btn btn-primary btn-full" [disabled]="loading"
-            style="margin-top: 8px; padding: 12px;">
-            {{ loading ? 'Signing in...' : 'Sign In' }}
-          </button>
-        </form>
-
-        <p class="auth-footer">
-          Don't have an account? <a routerLink="/register">Create one</a>
-        </p>
+        </div>
       </div>
     </div>
-  `,
-  styles: [`
-    .auth-logo {
-      font-size: 36px;
-      margin-bottom: 12px;
-    }
-  `]
+  `
 })
 export class LoginComponent {
   email = '';
@@ -68,7 +73,7 @@ export class LoginComponent {
         this.router.navigate(['/dashboard']);
       },
       error: () => {
-        this.error = 'Invalid email or password.';
+        this.error = 'Access denied. Please check your credentials.';
         this.loading = false;
       },
       complete: () => { this.loading = false; }

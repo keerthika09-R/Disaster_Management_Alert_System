@@ -130,7 +130,13 @@ public class ProfileController {
                                 .orElseThrow(() -> new RuntimeException("User not found"));
 
                 UserProfile profile = profileService.getProfileByUser(user)
-                                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                                .orElseGet(() -> {
+                                        UserProfile newProfile = new UserProfile();
+                                        newProfile.setUser(user);
+                                        newProfile.setFullName(user.getEmail().split("@")[0]); // Default name from
+                                                                                               // email
+                                        return newProfile;
+                                });
 
                 if (request.getCountry() != null)
                         profile.setCountry(request.getCountry());
@@ -140,6 +146,8 @@ public class ProfileController {
                         profile.setCity(request.getCity());
                 if (request.getRegion() != null)
                         profile.setRegion(request.getRegion());
+                if (request.getFullName() != null)
+                        profile.setFullName(request.getFullName());
 
                 return ResponseEntity.ok(profileService.saveProfile(profile));
         }
