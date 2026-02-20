@@ -43,7 +43,7 @@ public class AdminDisasterController {
     }
 
     /**
-     * Approve = Verify & Publish → auto-broadcasts a region alert
+     * Approve = Verify the disaster details.
      */
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,10 +51,7 @@ public class AdminDisasterController {
             @PathVariable Long id, Authentication authentication) {
         DisasterEvent event = disasterEventService.approveEvent(id, authentication.getName());
 
-        // Auto-broadcast region-based alert
-        alertService.createAlertFromDisaster(event, authentication.getName());
-
-        return ResponseEntity.ok(ApiResponse.success("Alert verified, published, and broadcast to region", event));
+        return ResponseEntity.ok(ApiResponse.success("Alert verified and marked for broadcast", event));
     }
 
     @PutMapping("/{id}/reject")
