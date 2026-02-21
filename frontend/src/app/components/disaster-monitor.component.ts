@@ -21,6 +21,7 @@ const COUNTRY_STATES: { [key: string]: string[] } = {
 export class DisasterMonitorComponent implements OnInit {
 
     activeTab = 'pending';
+    userRole = '';
     statusMessage = '';
     statusType = '';
     syncing = false;
@@ -83,7 +84,13 @@ export class DisasterMonitorComponent implements OnInit {
 
     constructor(private ds: DisasterService, private router: Router) { }
 
-    ngOnInit() { this.loadTab(); }
+    ngOnInit() {
+        this.userRole = localStorage.getItem('user_role') || '';
+        if (this.userRole !== 'ADMIN') {
+            this.activeTab = 'verified';
+        }
+        this.loadTab();
+    }
 
     goBack() { this.router.navigate(['/dashboard']); }
 

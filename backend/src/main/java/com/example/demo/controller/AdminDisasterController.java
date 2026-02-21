@@ -51,7 +51,11 @@ public class AdminDisasterController {
             @PathVariable Long id, Authentication authentication) {
         DisasterEvent event = disasterEventService.approveEvent(id, authentication.getName());
 
-        return ResponseEntity.ok(ApiResponse.success("Alert verified and marked for broadcast", event));
+        // Auto-publish to alerts table so citizens can see it on their dashboard
+        // (Requirement: Verify -> Publish)
+        alertService.createAlertFromDisaster(event, authentication.getName());
+
+        return ResponseEntity.ok(ApiResponse.success("Alert verified and published to dashboard", event));
     }
 
     @PutMapping("/{id}/reject")

@@ -16,6 +16,9 @@
     <main class="main-panel">
         <header class="top-header">
             <h2>Disaster Monitor</h2>
+            <button *ngIf="userRole==='ADMIN'" class="btn btn-primary" (click)="syncFromApi()" [disabled]="syncing">
+                {{ syncing ? 'Syncing...' : '🔄 Sync USGS & Weather' }}
+            </button>
         </header>
 
         <div class="content area">
@@ -30,12 +33,15 @@
             <!-- Tab Navigation (Professional Segmented Style) -->
             <div
                 style="display: flex; gap: 8px; margin-bottom: 24px; background: var(--surface); padding: 8px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); width: fit-content;">
-                <button *ngFor="let tab of tabs" class="btn btn-sm" [class.btn-primary]="activeTab===tab.key"
-                    [class.btn-outline]="activeTab!==tab.key" (click)="activeTab=tab.key; loadTab()">
-                    {{ tab.label }}
-                    <span *ngIf="tab.count !== undefined" style="margin-left: 6px; opacity: 0.8;">[{{ tab.count
-                        }}]</span>
-                </button>
+                <ng-container *ngFor="let tab of tabs">
+                    <button *ngIf="userRole==='ADMIN' || tab.key==='verified'" class="btn btn-sm"
+                        [class.btn-primary]="activeTab===tab.key" [class.btn-outline]="activeTab!==tab.key"
+                        (click)="activeTab=tab.key; loadTab()">
+                        {{ tab.label }}
+                        <span *ngIf="tab.count !== undefined" style="margin-left: 6px; opacity: 0.8;">[{{ tab.count
+                            }}]</span>
+                    </button>
+                </ng-container>
             </div>
 
             <!-- ============ PENDING FOR REVIEW ============ -->

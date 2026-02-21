@@ -136,7 +136,7 @@ const COUNTRY_STATES: { [key: string]: string[] } = {
                         </div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">My Response Region</div>
+                        <div class="summary-label">{{ userRole === 'RESPONDER' ? 'My Response Region' : 'My Current Region' }}</div>
                         <div class="summary-value" style="font-size: 1.1rem; padding-top: 8px;">
                             {{ profile.country || 'Not Set' }}
                             <div style="font-size: 0.8rem; opacity: 0.8;">{{ profile.state || '-' }}</div>
