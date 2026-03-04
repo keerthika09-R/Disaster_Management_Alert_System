@@ -1,6 +1,7 @@
 
 
 import { AuthService } from '../../core/services/auth.service';
+import { TokenService } from '../../core/services/token.service';
 
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -26,8 +27,9 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
+    private tokenService: TokenService,
     private router: Router
-  ) {}
+  ) { }
 
   login() {
 
@@ -35,20 +37,19 @@ export class LoginComponent {
 
       next: (response: any) => {
 
-  localStorage.setItem("token", response.token);
-  localStorage.setItem("role", response.role);
+        this.tokenService.saveToken(response.token);
+        this.tokenService.saveRole(response.role);
 
-  if (response.role === "ADMIN")
-    this.router.navigate(['/admin/dashboard']);
+        if (response.role === "ADMIN")
+          this.router.navigate(['/admin/dashboard']);
 
-  else if (response.role === "RESPONDER")
-    this.router.navigate(['/responder/dashboard']);
+        else if (response.role === "RESPONDER")
+          this.router.navigate(['/responder/dashboard']);
 
-  else
-    this.router.navigate(['/citizen/dashboard']);
+        else
+          this.router.navigate(['/citizen/dashboard']);
 
-},
-
+      },
 
       error: (error: any) => {
 

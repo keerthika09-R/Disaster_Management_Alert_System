@@ -1,17 +1,71 @@
 <app-navbar></app-navbar>
 
-<div class="dashboard-container">
+<div class="dashboard-wrapper">
 
-  <div class="dashboard-card">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Responder Dashboard</h1>
+      <p>Review and acknowledge your active rescue assignments.</p>
+    </div>
+    <div class="status-indicator">
+      <i class="fas fa-circle active-dot text-success"></i> Status: <span class="text-success">On-Duty</span>
+    </div>
+  </div>
 
-    <h1>Responder Dashboard</h1>
+  <div class="dashboard-section Glass-Panel">
+    <h2><i class="fas fa-tasks text-primary"></i> Active Assignments</h2>
+    <p class="section-desc">Disaster zones requiring immediate responder deployment.</p>
 
-    <p>Manage rescue operations and emergency alerts.</p>
+    <div class="alert-list" *ngIf="assignedTasks.length > 0; else noTasks">
+
+      <div class="alert-card animate-pop" *ngFor="let task of assignedTasks"
+        [ngClass]="{'acknowledged-card': isAcknowledged(task.id)}">
+
+        <div class="card-header">
+          <span class="badge" [ngClass]="'badge-' + task.type.toLowerCase()">{{ task.type }}</span>
+          <span class="status-badge" *ngIf="isAcknowledged(task.id)">
+            <i class="fas fa-check-double"></i> Acknowledged
+          </span>
+          <span class="status-badge urgent" *ngIf="!isAcknowledged(task.id)">
+            <i class="fas fa-exclamation"></i> Action Required
+          </span>
+        </div>
+
+        <div class="card-body">
+          <h3>{{ task.location }}</h3>
+          <p>{{ task.description }}</p>
+          <div class="details-row">
+            <span><strong>Severity:</strong> <span class="text-danger">{{ task.severity || 'High' }}</span></span>
+            <span><strong>Date:</strong> {{ task.date || 'Just Now' }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn-acknowledge" *ngIf="!isAcknowledged(task.id)" (click)="acknowledgeTask(task.id)">
+            <i class="fas fa-check-circle"></i> Acknowledge & Deploy
+          </button>
+
+          <div class="action-buttons" *ngIf="isAcknowledged(task.id)">
+            <button class="btn-update"><i class="fas fa-sync-alt"></i> Update Status</button>
+            <button class="btn-map"><i class="fas fa-map-marker-alt"></i> View on Map</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <ng-template #noTasks>
+      <div class="empty-state">
+        <i class="fas fa-coffee text-muted"></i>
+        <p>You have no active assignments right now. Standby for deployment.</p>
+      </div>
+    </ng-template>
 
   </div>
 
 </div>
 
 <footer class="footer">
-  © 2026 Disaster Management System
+  <p>© 2026 Disaster Management System | Responder Portal</p>
 </footer>

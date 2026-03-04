@@ -1,17 +1,88 @@
 <app-navbar></app-navbar>
 
-<div class="dashboard-container">
+<!-- Emergency Toast Notification -->
+<div class="toast-container animate-slide-down" *ngIf="showToast">
+  <div class="toast error-toast">
+    <i class="fas fa-exclamation-triangle toast-icon"></i>
+    <div class="toast-content">
+      <strong>EMERGENCY ALERT:</strong> New disaster reported in your region!
+    </div>
+    <button class="toast-close" (click)="showToast = false"><i class="fas fa-times"></i></button>
+  </div>
+</div>
 
-  <div class="dashboard-card">
+<div class="dashboard-wrapper">
 
-    <h1>Citizen Dashboard</h1>
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Citizen Dashboard</h1>
+      <p>Stay informed about real-time alerts in your region.</p>
+    </div>
+    <button class="btn-danger" (click)="toggleRescueForm()">
+      <i class="fas fa-life-ring"></i> Request Emergency Rescue
+    </button>
+  </div>
 
-    <p>View alerts and request help.</p>
+  <!-- Rescue Request Form Modal -->
+  <div class="modal-overlay animate-fade" *ngIf="showRescueForm">
+    <div class="modal-card animate-pop">
+      <div class="modal-header">
+        <h2><i class="fas fa-ambulance text-danger"></i> Emergency Rescue Request</h2>
+        <button class="btn-close" (click)="toggleRescueForm()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Location Details</label>
+          <input type="text" placeholder="Enter exact address or landmark...">
+        </div>
+        <div class="form-group">
+          <label>Emergency Type</label>
+          <select>
+            <option>Trapped in Flood</option>
+            <option>Fire Hazard</option>
+            <option>Medical Emergency</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Number of People</label>
+          <input type="number" min="1" value="1">
+        </div>
+        <button class="btn-submit-danger" (click)="submitRescueRequest()">
+          Submit Immediate Request
+        </button>
+      </div>
+    </div>
+  </div>
 
+  <!-- Active Alerts List -->
+  <div class="dashboard-section Glass-Panel">
+    <h2><i class="fas fa-broadcast-tower text-primary"></i> Live Disaster Alerts</h2>
+
+    <div class="alert-list" *ngIf="activeAlerts.length > 0; else noAlerts">
+      <div class="alert-card active-card animate-slide" *ngFor="let disaster of activeAlerts">
+        <div class="card-header">
+          <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType
+            }}</span>
+          <span class="severity">{{ disaster.severity || 'High' }}</span>
+        </div>
+        <div class="card-body">
+          <h3>{{ disaster.location }}</h3>
+          <p>{{ disaster.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noAlerts>
+      <div class="empty-state">
+        <i class="fas fa-shield-heart text-success"></i>
+        <p>No active disaster alerts in your region. You are safe!</p>
+      </div>
+    </ng-template>
   </div>
 
 </div>
 
 <footer class="footer">
-  © 2026 Disaster Management System
+  <p>© 2026 Disaster Management System | Citizen Portal</p>
 </footer>

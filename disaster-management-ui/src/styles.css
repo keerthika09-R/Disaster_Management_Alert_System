@@ -1,18 +1,67 @@
 /* You can add global styles to this file, and also import other style files */
-:root {
 
-  --primary-green: #8FBC8F;        /* Pastel Green */
-  --secondary-green: #A8D5BA;
-  --light-green: #E8F5E9;
-  --dark-green: #2F4F4F;
-
-  --white: #ffffff;
-  --gray: #6c757d;
-
-}
 
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
   background-color: var(--light-green);
+}
+
+:root {
+
+--primary: #7ED9A3;
+--primary-dark: #4CAF82;
+
+--bg-app: #F4FBF7;
+
+--bg-card: #FFFFFF;
+
+--border: #E3F2E8;
+
+--text-main: #1F2937;
+
+--text-muted: #6B7280;
+
+--success: #22C55E;
+
+--danger: #EF4444;
+
+}
+
+.card{
+
+background: var(--bg-card);
+
+border:1px solid var(--border);
+
+border-radius:12px;
+
+padding:24px;
+
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+
+}
+
+.sidebar{
+
+background:linear-gradient(
+180deg,
+#A8E6CF,
+#7ED9A3
+);
+
+color:white;
+
+}
+
+.btn-primary{
+
+background:#7ED9A3;
+
+border:none;
+
+color:white;
+
+font-weight:600;
+
 }

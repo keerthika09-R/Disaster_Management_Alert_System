@@ -1,17 +1,153 @@
 <app-navbar></app-navbar>
 
-<div class="dashboard-container">
+<div class="dashboard-wrapper">
 
-  <div class="dashboard-card">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Admin Dashboard</h1>
+      <p>Monitor real-time disaster data and coordinate rescue actions.</p>
+    </div>
+    <button class="btn-sync" (click)="syncAPI()" [disabled]="isSyncing">
+      <i class="fas" [ngClass]="isSyncing ? 'fa-spinner fa-spin' : 'fa-satellite-dish'"></i>
+      {{ isSyncing ? 'Syncing...' : 'Sync Live Data' }}
+    </button>
+  </div>
 
-    <h1>Admin Dashboard</h1>
+  <div class="dashboard-grid">
 
-    <p>Manage users, alerts, and system settings.</p>
+    <!-- Pending Disasters Section -->
+    <div class="dashboard-section Glass-Panel">
+      <h2><i class="fas fa-exclamation-circle text-warning"></i> Pending Verification</h2>
+      <p class="section-desc">Disasters fetched from external APIs waiting for your approval.</p>
+
+      <div class="alert-list" *ngIf="pendingDisasters.length > 0; else noPending">
+        <div class="alert-card animate-pop" *ngFor="let disaster of pendingDisasters">
+          <div class="card-header">
+            <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType
+              }}</span>
+            <span class="severity">{{ disaster.severity || 'High' }}</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ disaster.location }}</h3>
+            <p>{{ disaster.description }}</p>
+          </div>
+          <div class="card-footer actions">
+            <button class="btn-approve" (click)="approveDisaster(disaster.id)">
+              <i class="fas fa-check"></i> Approve & Broadcast
+            </button>
+            <button class="btn-reject" (click)="rejectDisaster(disaster.id)">
+              <i class="fas fa-times"></i> Reject
+            </button>
+          </div>
+        </div>
+      </div>
+      <ng-template #noPending>
+        <div class="empty-state">
+          <i class="fas fa-clipboard-check"></i>
+          <p>No pending alerts. All clear!</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Verified Disasters Section -->
+    <div class="dashboard-section Glass-Panel">
+      <h2><i class="fas fa-tower-broadcast text-success"></i> Broadcasted Alerts</h2>
+      <p class="section-desc">Active alerts that have been verified and broadcasted.</p>
+
+      <div class="alert-list" *ngIf="verifiedDisasters.length > 0; else noVerified">
+        <div class="alert-card active-card animate-slide" *ngFor="let disaster of verifiedDisasters">
+          <div class="card-header">
+            <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType
+              }}</span>
+            <span class="status-live"><i class="fas fa-circle active-dot"></i> LIVE</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ disaster.location }}</h3>
+            <p>{{ disaster.description }}</p>
+          </div>
+          <div class="card-footer">
+            <button class="btn-details">
+              View Tasks & Details <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <ng-template #noVerified>
+        <div class="empty-state">
+          <i class="fas fa-shield-alt"></i>
+          <p>No active alerts right now.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Analytics Dashboard Section (Milestone 5) -->
+    <div class="dashboard-section Glass-Panel analytics-panel" style="grid-column: span 2;">
+      <h2><i class="fas fa-chart-line text-primary"></i> Analytics & Reporting Dashboard</h2>
+      <p class="section-desc">Historical data on response times and disaster frequencies.</p>
+
+      <div class="analytics-grid">
+
+        <div class="stat-card">
+          <div class="stat-icon bg-blue"><i class="fas fa-water"></i></div>
+          <div class="stat-info">
+            <h4>Total Floods Handled</h4>
+            <span class="stat-number">42</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon bg-red"><i class="fas fa-fire-alt"></i></div>
+          <div class="stat-info">
+            <h4>Fires Suppressed</h4>
+            <span class="stat-number">18</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon bg-green"><i class="fas fa-stopwatch"></i></div>
+          <div class="stat-info">
+            <h4>Avg. Response Time</h4>
+            <span class="stat-number">14m</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon bg-yellow"><i class="fas fa-users-cog"></i></div>
+          <div class="stat-info">
+            <h4>Responders Deployed</h4>
+            <span class="stat-number">1,240</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="charts-placeholder">
+        <div class="chart-box">
+          <h3>Alert Frequency by Region</h3>
+          <div class="mock-bar-chart">
+            <div class="bar" style="height: 80%"><span>Mumbai</span></div>
+            <div class="bar" style="height: 40%"><span>Pune</span></div>
+            <div class="bar" style="height: 60%"><span>Delhi</span></div>
+            <div class="bar" style="height: 90%"><span>Chennai</span></div>
+            <div class="bar" style="height: 30%"><span>Kochi</span></div>
+          </div>
+        </div>
+
+        <div class="chart-box">
+          <h3>Responder Activity Levels</h3>
+          <div class="mock-line-chart">
+            <i class="fas fa-chart-area line-icon text-success"></i>
+            <p>Up 24% this month</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
 
   </div>
 
 </div>
 
 <footer class="footer">
-  © 2026 Disaster Management System
+  <p>© 2026 Disaster Management System | Admin Portal</p>
 </footer>
