@@ -22,7 +22,7 @@
         [ngClass]="{'acknowledged-card': isAcknowledged(task.id)}">
 
         <div class="card-header">
-          <span class="badge" [ngClass]="'badge-' + task.type.toLowerCase()">{{ task.type }}</span>
+          <span class="badge" [ngClass]="'badge-' + (task.type || 'alert').toLowerCase()">{{ task.type || 'Alert' }}</span>
           <span class="status-badge" *ngIf="isAcknowledged(task.id)">
             <i class="fas fa-check-double"></i> Acknowledged
           </span>
@@ -62,6 +62,99 @@
       </div>
     </ng-template>
 
+  </div>
+
+  <div class="dashboard-section Glass-Panel">
+    <h2><i class="fas fa-ambulance text-primary"></i> Rescue Requests</h2>
+    <p class="section-desc">Accept citizen rescue requests until the required responder count is reached.</p>
+
+    <div class="alert-list" *ngIf="availableRequests.length > 0; else noRescueRequests">
+      <div class="alert-card animate-pop" *ngFor="let request of availableRequests">
+        <div class="card-header">
+          <span class="badge badge-fire">{{ request.emergencyType }}</span>
+          <span class="status-badge">
+            {{ request.acceptedRespondersCount }}/{{ request.requiredResponders }} accepted
+          </span>
+        </div>
+
+        <div class="card-body">
+          <h3>{{ request.location }}</h3>
+          <p>{{ request.description || 'No additional description provided.' }}</p>
+          <div class="details-row">
+            <span><strong>People:</strong> {{ request.numberOfPeople }}</span>
+            <span><strong>Status:</strong> {{ request.status }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button
+            class="btn-acknowledge"
+            *ngIf="!request.acceptedByCurrentResponder"
+            (click)="acceptRescueRequest(request.id)">
+            <i class="fas fa-user-check"></i> Accept Rescue Request
+          </button>
+
+          <div class="accepted-note" *ngIf="request.acceptedByCurrentResponder">
+            <i class="fas fa-check-circle"></i> You already accepted this request
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noRescueRequests>
+      <div class="empty-state">
+        <i class="fas fa-clipboard-check text-muted"></i>
+        <p>No open rescue requests are waiting for responders.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="dashboard-section Glass-Panel">
+    <h2><i class="fas fa-clipboard-list text-primary"></i> My Assigned Tasks</h2>
+    <p class="section-desc">Update operational task progress assigned to your zone and account.</p>
+
+    <div class="alert-list" *ngIf="myOperationalTasks.length > 0; else noOperationalTasks">
+      <div class="alert-card animate-pop" *ngFor="let task of myOperationalTasks">
+        <div class="card-header">
+          <span class="badge badge-cyclone">{{ task.zone }}</span>
+          <span class="status-badge">{{ task.status }}</span>
+        </div>
+
+        <div class="card-body">
+          <h3>{{ task.title }}</h3>
+          <p>{{ task.description || 'No description provided.' }}</p>
+          <div class="details-row">
+            <span><strong>Priority:</strong> {{ task.priority }}</span>
+            <span><strong>Updated:</strong> {{ task.updatedAt | date:'short' }}</span>
+          </div>
+        </div>
+
+        <div class="task-update-panel">
+          <label>Status</label>
+          <select [(ngModel)]="task.nextStatus">
+            <option value="ASSIGNED">ASSIGNED</option>
+            <option value="ACCEPTED">ACCEPTED</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="ON_HOLD">ON_HOLD</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+
+          <label>Progress Note</label>
+          <textarea rows="3" [(ngModel)]="task.nextProgressNote"></textarea>
+
+          <button class="btn-acknowledge" (click)="updateOperationalTask(task)">
+            <i class="fas fa-save"></i> Update Task Progress
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noOperationalTasks>
+      <div class="empty-state">
+        <i class="fas fa-clipboard text-muted"></i>
+        <p>No operational tasks assigned to you yet.</p>
+      </div>
+    </ng-template>
   </div>
 
 </div>

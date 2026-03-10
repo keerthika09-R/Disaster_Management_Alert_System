@@ -1,17 +1,20 @@
 .profile-page {
-  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(135deg,#e8f5e9,#c8e6c9);
   display:flex;
   justify-content:center;
   align-items:center;
+  padding: 32px 16px;
+  box-sizing: border-box;
 }
 
 .profile-card {
   width:900px;
-  height:400px;
+  max-width: 100%;
+  min-height:400px;
   display:flex;
   border-radius:20px;
-  overflow:hidden;
+  overflow:visible;
   box-shadow:0 10px 30px rgba(0,0,0,0.2);
   background:white;
 }
@@ -57,6 +60,8 @@
 .right{
   width:65%;
   padding:40px;
+  display:flex;
+  flex-direction:column;
 }
 
 .right h2{
@@ -68,18 +73,119 @@
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:20px;
+  align-items:start;
 }
 
 label{
   font-weight:bold;
+  display:block;
+  margin-bottom:8px;
+}
+
+.info-grid p{
+  margin: 0;
+  color:#333;
+  min-height: 20px;
+  display:flex;
+  align-items:center;
+}
+
+.form-grid input{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid #cfd8dc;
+  border-radius:12px;
+  font-size:14px;
+  outline:none;
+  box-sizing:border-box;
+}
+
+.form-grid input:focus{
+  border-color:#2e7d32;
+  box-shadow:0 0 0 3px rgba(46,125,50,0.12);
+}
+
+.full-width{
+  grid-column:1 / -1;
+}
+
+.action-row{
+  display:flex;
+  gap:12px;
+  justify-content:flex-end;
+  margin-top:24px;
+  flex-wrap:wrap;
+}
+
+.status-message{
+  margin-bottom:16px;
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:14px;
+}
+
+.status-message.success{
+  background:#e8f5e9;
+  color:#1b5e20;
+}
+
+.status-message.error{
+  background:#ffebee;
+  color:#b71c1c;
 }
 
 .update-btn{
-  margin-top:30px;
   padding:10px 20px;
   background:#2e7d32;
   color:white;
   border:none;
   border-radius:20px;
   cursor:pointer;
+  align-self:flex-start;
+}
+
+.secondary-btn{
+  padding:10px 20px;
+  background:#eceff1;
+  color:#263238;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+}
+
+.update-btn:disabled{
+  opacity:0.7;
+  cursor:not-allowed;
+}
+
+@media (max-width: 768px){
+  .profile-card{
+    flex-direction:column;
+  }
+
+  .left,
+  .right{
+    width:100%;
+  }
+
+  .left{
+    padding:32px 24px;
+  }
+
+  .right{
+    padding:24px;
+  }
+
+  .info-grid{
+    grid-template-columns:1fr;
+  }
+
+  .action-row{
+    justify-content:stretch;
+  }
+
+  .action-row button,
+  .update-btn{
+    width:100%;
+  }
 }

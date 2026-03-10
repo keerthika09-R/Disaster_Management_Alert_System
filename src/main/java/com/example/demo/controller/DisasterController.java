@@ -30,6 +30,11 @@ public class DisasterController {
         return service.getVerifiedEvents();
     }
 
+    @GetMapping("/{id}")
+    public DisasterEvent getById(@PathVariable Long id) {
+        return service.getEventById(id);
+    }
+
     @PostMapping("/create")
     public DisasterEvent create(@RequestBody DisasterEvent event) {
         return service.createEvent(event);

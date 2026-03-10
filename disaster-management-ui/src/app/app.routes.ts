@@ -7,6 +7,7 @@ import { RegisterComponent } from './auth/register/register.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { ResponderDashboardComponent } from './pages/responder-dashboard/responder-dashboard.component';
 import { CitizenDashboardComponent } from './pages/citizen-dashboard/citizen-dashboard.component';
+import { AdminAlertDetailComponent } from './pages/admin-alert-detail/admin-alert-detail.component';
 
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
@@ -25,6 +26,12 @@ export const routes: Routes = [
   {
     path: 'admin/dashboard',
     component: AdminDashboardComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: 'ADMIN' }
+  },
+  {
+    path: 'admin/alerts/:id',
+    component: AdminAlertDetailComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { role: 'ADMIN' }
   },

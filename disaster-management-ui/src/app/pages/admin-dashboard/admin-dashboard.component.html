@@ -64,9 +64,19 @@
           <div class="card-body">
             <h3>{{ disaster.location }}</h3>
             <p>{{ disaster.description }}</p>
+            <div class="acknowledgment-panel" *ngIf="disaster.acknowledgments?.length; else noResponderAccepted">
+              <p class="acknowledgment-title">Accepted by responders:</p>
+              <div class="acknowledgment-entry" *ngFor="let ack of disaster.acknowledgments">
+                <span class="ack-email">{{ ack.responderEmail }}</span>
+                <span class="ack-time">{{ ack.acknowledgedAt | date:'medium' }}</span>
+              </div>
+            </div>
+            <ng-template #noResponderAccepted>
+              <p class="acknowledgment-empty">No responder has accepted this alert yet.</p>
+            </ng-template>
           </div>
           <div class="card-footer">
-            <button class="btn-details">
+            <button class="btn-details" (click)="viewAlertDetails(disaster)">
               View Tasks & Details <i class="fas fa-arrow-right"></i>
             </button>
           </div>
@@ -142,6 +152,122 @@
         </div>
       </div>
 
+    </div>
+
+    <div class="dashboard-section Glass-Panel rescue-request-panel" style="grid-column: span 2;">
+      <h2><i class="fas fa-ambulance text-warning"></i> Citizen Rescue Requests</h2>
+      <p class="section-desc">Track responder acceptance and see when a request is no longer available to others.</p>
+
+      <div class="alert-list" *ngIf="rescueRequests.length > 0; else noRescueRequests">
+        <div class="alert-card" *ngFor="let request of rescueRequests">
+          <div class="card-header">
+            <span class="badge badge-fire">{{ request.emergencyType }}</span>
+            <span class="severity">
+              {{ request.acceptedRespondersCount }}/{{ request.requiredResponders }} responders
+            </span>
+          </div>
+          <div class="card-body">
+            <h3>{{ request.location }}</h3>
+            <p>{{ request.description || 'No additional description provided.' }}</p>
+            <p><strong>Citizen:</strong> {{ request.citizenEmail }}</p>
+            <p><strong>Status:</strong> {{ request.status }}</p>
+            <div class="acknowledgment-panel" *ngIf="request.acceptedResponders?.length; else noRescueAcceptances">
+              <p class="acknowledgment-title">Accepted by responders:</p>
+              <div class="acknowledgment-entry" *ngFor="let responder of request.acceptedResponders">
+                <span class="ack-email">{{ responder.responderEmail }}</span>
+                <span class="ack-time">{{ responder.acceptedAt | date:'medium' }}</span>
+              </div>
+            </div>
+            <ng-template #noRescueAcceptances>
+              <p class="acknowledgment-empty">No responder has accepted this request yet.</p>
+            </ng-template>
+          </div>
+          <div class="card-footer">
+            <button class="btn-approve" (click)="prepareTaskForRequest(request)">
+              Assign Rescue Task
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noRescueRequests>
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No rescue requests have been submitted yet.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="dashboard-section Glass-Panel rescue-request-panel" style="grid-column: span 2;">
+      <h2><i class="fas fa-user-cog text-primary"></i> Assign Rescue Task</h2>
+      <p class="section-desc">Choose a zone, pick a responder from that zone, and assign the operational task.</p>
+
+      <div *ngIf="taskMessage" class="task-banner success-banner">{{ taskMessage }}</div>
+      <div *ngIf="taskError" class="task-banner error-banner">{{ taskError }}</div>
+
+      <div class="task-form-grid">
+        <div>
+          <label>Zone</label>
+          <input type="text" [(ngModel)]="assignmentForm.zone" (ngModelChange)="onZoneChange()">
+        </div>
+        <div>
+          <label>Responder</label>
+          <select [(ngModel)]="assignmentForm.assignedResponderEmail">
+            <option value="">Select responder</option>
+            <option *ngFor="let responder of respondersForZone" [value]="responder.email">
+              {{ responder.fullName || responder.email }} - {{ responder.email }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label>Title</label>
+          <input type="text" [(ngModel)]="assignmentForm.title">
+        </div>
+        <div>
+          <label>Priority</label>
+          <select [(ngModel)]="assignmentForm.priority">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+            <option value="CRITICAL">CRITICAL</option>
+          </select>
+        </div>
+        <div class="full-span">
+          <label>Description</label>
+          <textarea rows="3" [(ngModel)]="assignmentForm.description"></textarea>
+        </div>
+      </div>
+
+      <button class="btn-sync" (click)="assignTask()">Assign Task</button>
+    </div>
+
+    <div class="dashboard-section Glass-Panel rescue-request-panel" style="grid-column: span 2;">
+      <h2><i class="fas fa-list-check text-success"></i> Assigned Tasks</h2>
+      <p class="section-desc">Operational tasks assigned to responders with zone and progress state.</p>
+
+      <div class="alert-list" *ngIf="assignedTasks.length > 0; else noAssignedTasks">
+        <div class="alert-card" *ngFor="let task of assignedTasks">
+          <div class="card-header">
+            <span class="badge badge-storm">{{ task.zone }}</span>
+            <span class="severity">{{ task.status }}</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ task.title }}</h3>
+            <p>{{ task.description || 'No description provided.' }}</p>
+            <p><strong>Responder:</strong> {{ task.assignedResponderEmail }}</p>
+            <p><strong>Priority:</strong> {{ task.priority }}</p>
+            <p><strong>Last Update:</strong> {{ task.updatedAt | date:'medium' }}</p>
+            <p><strong>Progress Note:</strong> {{ task.progressNote || 'No progress update yet.' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noAssignedTasks>
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No rescue tasks assigned yet.</p>
+        </div>
+      </ng-template>
     </div>
 
   </div>

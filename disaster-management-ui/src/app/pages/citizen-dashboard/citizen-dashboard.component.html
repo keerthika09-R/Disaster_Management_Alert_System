@@ -33,23 +33,32 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Location Details</label>
-          <input type="text" placeholder="Enter exact address or landmark...">
+          <input type="text" placeholder="Enter exact address or landmark..." [(ngModel)]="rescueForm.location">
         </div>
         <div class="form-group">
           <label>Emergency Type</label>
-          <select>
+          <select [(ngModel)]="rescueForm.emergencyType">
             <option>Trapped in Flood</option>
             <option>Fire Hazard</option>
             <option>Medical Emergency</option>
+            <option>Earthquake Injury</option>
             <option>Other</option>
           </select>
         </div>
         <div class="form-group">
           <label>Number of People</label>
-          <input type="number" min="1" value="1">
+          <input type="number" min="1" [(ngModel)]="rescueForm.numberOfPeople">
+        </div>
+        <div class="form-group">
+          <label>Responders Needed</label>
+          <input type="number" min="1" [(ngModel)]="rescueForm.requiredResponders">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea rows="4" [(ngModel)]="rescueForm.description" placeholder="Describe the emergency briefly..."></textarea>
         </div>
         <button class="btn-submit-danger" (click)="submitRescueRequest()">
-          Submit Immediate Request
+          {{ isSubmitting ? 'Submitting...' : 'Submit Immediate Request' }}
         </button>
       </div>
     </div>
@@ -77,6 +86,41 @@
       <div class="empty-state">
         <i class="fas fa-shield-heart text-success"></i>
         <p>No active disaster alerts in your region. You are safe!</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="dashboard-section Glass-Panel status-panel">
+    <h2><i class="fas fa-hands-helping text-danger"></i> My Rescue Requests</h2>
+    <p class="section-desc">Track how many responders have accepted your emergency request.</p>
+    <div *ngIf="formMessage" class="inline-message success-message">{{ formMessage }}</div>
+    <div *ngIf="formError" class="inline-message error-message">{{ formError }}</div>
+
+    <div class="request-list" *ngIf="myRescueRequests.length > 0; else noRequests">
+      <div class="request-card" *ngFor="let request of myRescueRequests">
+        <div class="request-top-row">
+          <span class="request-type">{{ request.emergencyType }}</span>
+          <span class="request-status">{{ request.status }}</span>
+        </div>
+        <h3>{{ request.location }}</h3>
+        <p>{{ request.description || 'No additional description provided.' }}</p>
+        <div class="request-meta">
+          <span><strong>People:</strong> {{ request.numberOfPeople }}</span>
+          <span><strong>Responders:</strong> {{ request.acceptedRespondersCount }}/{{ request.requiredResponders }}</span>
+        </div>
+        <div class="accepted-list" *ngIf="request.acceptedResponders?.length">
+          <div class="accepted-item" *ngFor="let responder of request.acceptedResponders">
+            <span>{{ responder.responderEmail }}</span>
+            <span>{{ responder.acceptedAt | date:'short' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noRequests>
+      <div class="empty-state">
+        <i class="fas fa-user-shield text-success"></i>
+        <p>No rescue requests raised yet.</p>
       </div>
     </ng-template>
   </div>

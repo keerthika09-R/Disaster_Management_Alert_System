@@ -22,6 +22,10 @@ public class DisasterService {
         return repository.findByStatus("VERIFIED");
     }
 
+    public DisasterEvent getEventById(Long id) {
+        return repository.findById(id).orElseThrow();
+    }
+
     public DisasterEvent createEvent(DisasterEvent event) {
         event.setStatus("PENDING");
         return repository.save(event);

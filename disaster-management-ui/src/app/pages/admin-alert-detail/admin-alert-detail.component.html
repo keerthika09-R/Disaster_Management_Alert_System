@@ -1,0 +1,94 @@
+<app-navbar></app-navbar>
+
+<div class="detail-page" *ngIf="disaster">
+  <div class="detail-header">
+    <div>
+      <a routerLink="/admin/dashboard" class="back-link">Back to Admin Dashboard</a>
+      <h1>{{ disaster.disasterType || 'Alert' }} Details</h1>
+      <p>{{ disaster.location }}</p>
+    </div>
+    <span class="status-chip">{{ disaster.status }}</span>
+  </div>
+
+  <div class="detail-grid">
+    <div class="panel">
+      <h2>Alert Summary</h2>
+      <p><strong>Severity:</strong> {{ disaster.severity || 'High' }}</p>
+      <p><strong>Description:</strong> {{ disaster.description }}</p>
+      <p><strong>Country:</strong> {{ disaster.country || '-' }}</p>
+      <p><strong>State:</strong> {{ disaster.state || '-' }}</p>
+      <p><strong>City:</strong> {{ disaster.city || '-' }}</p>
+    </div>
+
+    <div class="panel">
+      <h2>Responder Acknowledgments</h2>
+      <div *ngIf="acknowledgments.length > 0; else noAcks">
+        <div class="list-item" *ngFor="let ack of acknowledgments">
+          <span>{{ ack.responderEmail }}</span>
+          <span>{{ ack.acknowledgedAt | date:'medium' }}</span>
+        </div>
+      </div>
+      <ng-template #noAcks>
+        <p class="muted">No responders have acknowledged this alert yet.</p>
+      </ng-template>
+    </div>
+
+    <div class="panel full">
+      <h2>Assign Rescue Task</h2>
+      <div *ngIf="taskMessage" class="banner success">{{ taskMessage }}</div>
+      <div *ngIf="taskError" class="banner error">{{ taskError }}</div>
+      <div class="form-grid">
+        <div>
+          <label>Zone</label>
+          <input type="text" [(ngModel)]="assignmentForm.zone" (ngModelChange)="onZoneChange()">
+        </div>
+        <div>
+          <label>Responder</label>
+          <select [(ngModel)]="assignmentForm.assignedResponderEmail">
+            <option value="">Select responder</option>
+            <option *ngFor="let responder of respondersForZone" [value]="responder.email">
+              {{ responder.fullName || responder.email }} - {{ responder.email }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label>Title</label>
+          <input type="text" [(ngModel)]="assignmentForm.title">
+        </div>
+        <div>
+          <label>Priority</label>
+          <select [(ngModel)]="assignmentForm.priority">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+            <option value="CRITICAL">CRITICAL</option>
+          </select>
+        </div>
+        <div class="full-row">
+          <label>Description</label>
+          <textarea rows="3" [(ngModel)]="assignmentForm.description"></textarea>
+        </div>
+      </div>
+      <button class="primary-btn" (click)="assignTask()">Assign Task</button>
+    </div>
+
+    <div class="panel full">
+      <h2>Linked Tasks</h2>
+      <div *ngIf="tasks.length > 0; else noTasks">
+        <div class="task-card" *ngFor="let task of tasks">
+          <div class="task-head">
+            <span>{{ task.title }}</span>
+            <span class="status-chip">{{ task.status }}</span>
+          </div>
+          <p>{{ task.description || 'No description provided.' }}</p>
+          <p><strong>Responder:</strong> {{ task.assignedResponderEmail }}</p>
+          <p><strong>Zone:</strong> {{ task.zone }}</p>
+          <p><strong>Progress:</strong> {{ task.progressNote || 'No progress update yet.' }}</p>
+        </div>
+      </div>
+      <ng-template #noTasks>
+        <p class="muted">No tasks have been assigned for this alert yet.</p>
+      </ng-template>
+    </div>
+  </div>
+</div>

@@ -1,70 +1,117 @@
 <app-navbar></app-navbar>
 
-
 <div class="profile-page">
-
   <div class="profile-card">
-
-    <!-- LEFT PANEL -->
     <div class="left">
-
       <div class="avatar">
         <i class="fas fa-user"></i>
       </div>
 
-      <h2>{{profile.fullName || 'User'}}</h2>
+      <h2>{{ profile.fullName || 'User' }}</h2>
 
       <span class="role">
-        {{profile.role || 'SYSTEM USER'}}
+        {{ profile.role || 'SYSTEM USER' }}
       </span>
 
       <p class="location">
-        {{profile.region || 'No Region'}}
+        {{ profile.region || 'No Region' }}
       </p>
-
     </div>
 
-
-    <!-- RIGHT PANEL -->
     <div class="right">
-
       <h2>Personal Information</h2>
 
-      <div class="info-grid">
+      <div *ngIf="message" class="status-message success">{{ message }}</div>
+      <div *ngIf="errorMessage" class="status-message error">{{ errorMessage }}</div>
 
+      <div class="info-grid" *ngIf="!isEditing">
         <div>
           <label>Full Name</label>
-          <p>{{profile.fullName}}</p>
+          <p>{{ profile.fullName || '-' }}</p>
         </div>
 
         <div>
           <label>Email</label>
-          <p>{{profile.email}}</p>
+          <p>{{ profile.email || '-' }}</p>
         </div>
 
         <div>
           <label>Phone</label>
-          <p>{{profile.phoneNumber}}</p>
+          <p>{{ profile.phoneNumber || '-' }}</p>
         </div>
 
         <div>
           <label>Region</label>
-          <p>{{profile.region}}</p>
+          <p>{{ profile.region || '-' }}</p>
         </div>
 
         <div>
           <label>Role</label>
-          <p>{{profile.role}}</p>
+          <p>{{ profile.role || '-' }}</p>
         </div>
-
       </div>
 
-      <button class="update-btn">
+      <form *ngIf="isEditing" (ngSubmit)="saveProfile()">
+        <div class="info-grid form-grid">
+          <div>
+            <label for="fullName">Full Name</label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              [(ngModel)]="editableProfile.fullName"
+            />
+          </div>
+
+          <div>
+            <label>Email</label>
+            <p>{{ profile.email || '-' }}</p>
+          </div>
+
+          <div>
+            <label for="phoneNumber">Phone</label>
+            <input
+              id="phoneNumber"
+              name="phoneNumber"
+              type="text"
+              [(ngModel)]="editableProfile.phoneNumber"
+            />
+          </div>
+
+          <div>
+            <label for="region">Region</label>
+            <input
+              id="region"
+              name="region"
+              type="text"
+              [(ngModel)]="editableProfile.region"
+            />
+          </div>
+
+          <div class="full-width">
+            <label for="profileImage">Profile Image URL</label>
+            <input
+              id="profileImage"
+              name="profileImage"
+              type="text"
+              [(ngModel)]="editableProfile.profileImage"
+            />
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="secondary-btn" type="button" (click)="cancelEditing()">
+            Cancel
+          </button>
+          <button class="update-btn" type="submit" [disabled]="isSaving">
+            {{ isSaving ? 'Saving...' : 'Save Profile' }}
+          </button>
+        </div>
+      </form>
+
+      <button class="update-btn" *ngIf="!isEditing" (click)="startEditing()">
         Update Profile
       </button>
-
     </div>
-
   </div>
-
 </div>

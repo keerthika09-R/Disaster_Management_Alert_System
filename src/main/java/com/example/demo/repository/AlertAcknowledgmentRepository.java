@@ -10,4 +10,8 @@ public interface AlertAcknowledgmentRepository
 
     List<AlertAcknowledgment> findByDisasterId(Long disasterId);
 
+    boolean existsByDisasterIdAndResponderEmail(Long disasterId, String responderEmail);
+
+    List<AlertAcknowledgment> findByResponderEmail(String responderEmail);
+
 }
