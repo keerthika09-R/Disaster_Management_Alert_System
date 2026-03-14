@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 
+import { TokenService } from '../core/services/token.service';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -11,7 +13,11 @@ import { RouterModule, Router } from '@angular/router';
 })
 export class NavbarComponent {
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private tokenService: TokenService) {}
+
+  isResponder(): boolean {
+    return this.tokenService.getRole() === 'RESPONDER';
+  }
 
   logout() {
 

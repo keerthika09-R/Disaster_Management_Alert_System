@@ -36,7 +36,7 @@
 
 }
 
-.profile-link {
+.profile-link, .nav-link {
 
   color: white;
 
@@ -46,7 +46,7 @@
 
 }
 
-.profile-link i {
+.profile-link i, .nav-link i {
 
   margin-right: 8px;
 

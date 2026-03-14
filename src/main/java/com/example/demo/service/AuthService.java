@@ -21,9 +21,9 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     public AuthService(UserService userService,
-                       PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager,
-                       JwtUtil jwtUtil) {
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil) {
 
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
@@ -31,33 +31,29 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-
     // =====================================================
     // REGISTER USER
     // =====================================================
     public User register(RegisterRequest request) {
 
-    if (userService.existsByEmail(request.getEmail())) {
-        throw new RuntimeException("Email already exists");
+        if (userService.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        String normalizedRole = request.getRole().toUpperCase();
+
+        User user = new User();
+
+        user.setFullName(request.getFullName()); // FIXED
+
+        user.setEmail(request.getEmail());
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        user.setRole(normalizedRole);
+
+        return userService.saveUser(user);
     }
-
-    String normalizedRole = request.getRole().toUpperCase();
-
-    User user = new User();
-
-    user.setFullName(request.getFullName());   // FIXED
-
-    user.setEmail(request.getEmail());
-
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-    user.setRole(normalizedRole);
-
-    return userService.saveUser(user);
-}
-
-
-
 
     // =====================================================
     // LOGIN USER
@@ -66,7 +62,6 @@ public class AuthService {
 
         System.out.println("=== LOGIN REQUEST RECEIVED ===");
         System.out.println("Email: " + request.getEmail());
-
 
         // Validate email
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
@@ -78,33 +73,24 @@ public class AuthService {
             throw new RuntimeException("Password is required");
         }
 
-
         // Authenticate user
-        Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.getEmail().trim(),
-                                request.getPassword()
-                        )
-                );
-
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail().trim(),
+                        request.getPassword()));
 
         // Fetch user from DB
         User user = userService.findByEmail(request.getEmail().trim())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-
         // Generate JWT token
         String token = jwtUtil.generateToken(
                 user.getEmail(),
-                user.getRole()
-        );
-
+                user.getRole());
 
         System.out.println("LOGIN SUCCESSFUL: " + user.getEmail());
 
-
         // Return response
-        return new JwtResponse(token, user.getRole());
+        return new JwtResponse(token, user.getRole(), user.getId());
     }
 }

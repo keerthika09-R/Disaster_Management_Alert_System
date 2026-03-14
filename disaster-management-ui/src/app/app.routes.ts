@@ -6,6 +6,8 @@ import { RegisterComponent } from './auth/register/register.component';
 
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { ResponderDashboardComponent } from './pages/responder-dashboard/responder-dashboard.component';
+import { ResponderApprovedDisastersComponent } from './pages/responder-approved-disasters/responder-approved-disasters.component';
+import { ResponderTaskDetailsComponent } from './pages/responder-task-details/responder-task-details.component';
 import { CitizenDashboardComponent } from './pages/citizen-dashboard/citizen-dashboard.component';
 
 import { AuthGuard } from './guards/auth.guard';
@@ -37,6 +39,20 @@ export const routes: Routes = [
   },
 
   {
+    path: 'responder/approved',
+    component: ResponderApprovedDisastersComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: 'RESPONDER' }
+  },
+
+  {
+    path: 'responder/task/:id',
+    component: ResponderTaskDetailsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: 'RESPONDER' }
+  },
+
+  {
     path: 'citizen/dashboard',
     component: CitizenDashboardComponent,
     canActivate: [AuthGuard, RoleGuard],
@@ -44,9 +60,9 @@ export const routes: Routes = [
   },
 
   {
-  path: 'profile',
-  component: ProfileComponent
-}
+    path: 'profile',
+    component: ProfileComponent
+  }
 
 
 

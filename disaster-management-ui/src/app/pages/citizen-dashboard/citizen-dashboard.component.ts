@@ -43,7 +43,22 @@ export class CitizenDashboardComponent implements OnInit {
   }
 
   submitRescueRequest() {
-    alert("Emergency Rescue Request Submitted Successfully!");
-    this.showRescueForm = false;
+    // In a complete app, we'd grab values from a form. Sending a dummy for demo.
+    const requestData = {
+      citizenEmail: 'citizen@example.com',
+      location: 'Current GPS Location',
+      description: 'Emergency Rescue Needed!'
+    };
+
+    this.disasterService.submitHelpRequest(requestData).subscribe({
+      next: (res) => {
+        alert("Emergency Rescue Request Submitted Successfully! A responder has been assigned.");
+        this.showRescueForm = false;
+      },
+      error: (err) => {
+        console.error("Failed to submit request", err);
+        alert("Failed to submit emergency request.");
+      }
+    });
   }
 }

@@ -39,6 +39,9 @@ export class LoginComponent {
 
         this.tokenService.saveToken(response.token);
         this.tokenService.saveRole(response.role);
+        if (response.id) {
+          this.tokenService.saveUserId(response.id);
+        }
 
         if (response.role === "ADMIN")
           this.router.navigate(['/admin/dashboard']);

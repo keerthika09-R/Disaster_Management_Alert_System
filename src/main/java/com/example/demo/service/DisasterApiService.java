@@ -37,10 +37,15 @@ public class DisasterApiService {
 
             for (JsonNode feature : features) {
                 JsonNode properties = feature.path("properties");
+                JsonNode geometry = feature.path("geometry");
 
                 String location = properties.path("place").asText();
                 double magnitude = properties.path("mag").asDouble();
                 long timeMillis = properties.path("time").asLong();
+
+                JsonNode coordinates = geometry.path("coordinates");
+                double longitude = coordinates.get(0).asDouble();
+                double latitude = coordinates.get(1).asDouble();
 
                 String date = Instant.ofEpochMilli(timeMillis)
                         .atZone(ZoneId.systemDefault())
@@ -55,6 +60,8 @@ public class DisasterApiService {
                 event.setDescription(date + " | " + description);
                 event.setSeverity(severity);
                 event.setStatus("PENDING");
+                event.setLongitude(longitude);
+                event.setLatitude(latitude);
 
                 // Check if already exists by location and description to prevent duplicates
                 if (repository.findByStatus("PENDING").stream()

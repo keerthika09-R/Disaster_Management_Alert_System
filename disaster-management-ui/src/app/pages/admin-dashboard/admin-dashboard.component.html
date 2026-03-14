@@ -65,10 +65,34 @@
             <h3>{{ disaster.location }}</h3>
             <p>{{ disaster.description }}</p>
           </div>
-          <div class="card-footer">
-            <button class="btn-details">
-              View Tasks & Details <i class="fas fa-arrow-right"></i>
-            </button>
+          <div class="card-footer" style="flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-primary" (click)="disaster.showAssignForm = !disaster.showAssignForm"
+                style="flex: 1; padding: 5px;">
+                <i class="fas fa-users"></i> Assign Responder
+              </button>
+              <button class="btn-success" (click)="resolveDisaster(disaster.id)"
+                style="flex: 1; padding: 5px; border-radius: 4px; border: none; cursor: pointer;">
+                <i class="fas fa-check-circle"></i> Resolve
+              </button>
+              <button class="btn-danger" (click)="deleteDisaster(disaster.id)"
+                style="flex: 1; padding: 5px; background: #ef4444; color: white; border-radius: 4px; border: none; cursor: pointer;">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+
+            <div *ngIf="disaster.showAssignForm"
+              style="width: 100%; margin-top: 10px; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 5px;">
+              <select [(ngModel)]="disaster.selectedResponder"
+                style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 5px;">
+                <option [value]="undefined" disabled selected>-- Choose Responder --</option>
+                <option *ngFor="let responder of responders" [value]="responder.id">{{ responder.fullName }}</option>
+              </select>
+              <input type="text" [(ngModel)]="disaster.taskDescription" placeholder="Task description..."
+                style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px;" />
+              <button (click)="assignTaskToDisaster(disaster)" class="btn-approve"
+                style="width: 100%; padding: 8px;">Deploy Responder</button>
+            </div>
           </div>
         </div>
       </div>
@@ -79,6 +103,74 @@
         </div>
       </ng-template>
     </div>
+
+    <!-- Active Operations Map Section -->
+    <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
+      <h2><i class="fas fa-map-marked-alt text-primary"></i> Live Disaster Operations</h2>
+      <p class="section-desc">Real-time global tracking of verified disaster zones and rescue sites.</p>
+
+      <div style="margin-top: 15px;">
+        <app-map [disasterEvents]="verifiedDisasters"></app-map>
+      </div>
+    </div>
+
+    <!-- Task Assignment Section -->
+    <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
+      <h2><i class="fas fa-tasks text-warning"></i> Assign Rescue Task to Specific Zones</h2>
+      <p class="section-desc">Deploy responder teams to verified disaster zones.</p>
+
+      <div class="assignment-form"
+        style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: end;">
+        <div>
+          <label style="display: block; margin-bottom: 5px; color: #cbd5e1;">Select Responder</label>
+          <select [(ngModel)]="assignModel.responderId"
+            style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <option value="" disabled selected>-- Choose Responder --</option>
+            <option *ngFor="let responder of responders" [value]="responder.id">{{ responder.fullName }} ({{
+              responder.email }})</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 5px; color: #cbd5e1;">Select Specific Disaster Zone</label>
+          <select [(ngModel)]="assignModel.disasterEventId"
+            style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <option value="" disabled selected>-- Choose Zone --</option>
+            <option *ngFor="let disaster of verifiedDisasters" [value]="disaster.id">{{ disaster.location }} ({{
+              disaster.title || disaster.disasterType }})</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 5px; color: #cbd5e1;">Task Description</label>
+          <input type="text" [(ngModel)]="assignModel.description" placeholder="e.g. Evacuate sector A"
+            style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;" />
+        </div>
+        <div style="grid-column: span 3; text-align: right;">
+          <button (click)="assignTask()" class="btn-approve" style="padding: 10px 20px;">
+            <i class="fas fa-paper-plane"></i> Deploy Responder to Zone
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History / Resolved Disasters Section -->
+    <div class="dashboard-section Glass-Panel" style="grid-column: span 2;" *ngIf="resolvedDisasters.length > 0">
+      <h2><i class="fas fa-history text-secondary"></i> History (Resolved Disasters)</h2>
+      <p class="section-desc">Previously active disasters and alerts that have been successfully resolved.</p>
+
+      <div class="alert-list">
+        <div class="alert-card completed-card" *ngFor="let disaster of resolvedDisasters" style="border-left-color: #6c757d;">
+          <div class="card-header">
+            <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType }}</span>
+            <span class="status-badge" style="color: #6c757d;"><i class="fas fa-check-double"></i> Resolved</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ disaster.location }}</h3>
+            <p>{{ disaster.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- Analytics Dashboard Section (Milestone 5) -->
     <div class="dashboard-section Glass-Panel analytics-panel" style="grid-column: span 2;">

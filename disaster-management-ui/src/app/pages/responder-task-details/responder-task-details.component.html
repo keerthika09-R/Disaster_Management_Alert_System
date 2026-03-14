@@ -1,0 +1,104 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-wrapper">
+
+    <div class="dashboard-header">
+        <div class="header-content">
+            <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            <h1>Task Execution Plan</h1>
+            <p>Review full details of the disaster and submit your situational report.</p>
+        </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p>Loading task specifics...</p>
+    </div>
+
+    <div *ngIf="!isLoading && task" class="task-details-container">
+
+        <!-- Disaster Details Card -->
+        <div class="details-card Glass-Panel">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> {{ task.disasterEvent?.disasterType || 'Disaster Event' }}</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Location</label>
+                    <p>{{ task.disasterEvent?.location || task.disasterEvent?.city || 'Unknown' }}</p>
+                </div>
+
+                <div class="info-item">
+                    <label>Severity</label>
+                    <p class="severity-badge" [ngClass]="task.disasterEvent?.severity?.toLowerCase()">
+                        {{ task.disasterEvent?.severity || 'Standard' }}
+                    </p>
+                </div>
+
+                <div class="info-item" *ngIf="task.disasterEvent?.latitude && task.disasterEvent?.longitude">
+                    <label>Coordinates</label>
+                    <p>{{ task.disasterEvent.latitude | number:'1.4-4' }}, {{ task.disasterEvent.longitude | number:'1.4-4' }}</p>
+                </div>
+            </div>
+
+            <div class="description-box" *ngIf="task.disasterEvent?.description">
+                <label>Disaster Full Report:</label>
+                <p>{{ task.disasterEvent.description }}</p>
+            </div>
+        </div>
+
+        <!-- Task Execution Card -->
+        <div class="action-card Glass-Panel">
+            <h2><i class="fas fa-clipboard-list text-primary"></i> Your Mission</h2>
+            <p class="mission-desc">{{ task.description }}</p>
+
+            <div class="status-manager">
+                <label>Current Status:</label>
+                <span class="status-badge" [ngClass]="task.status.toLowerCase()">
+                    <i class="fas fa-exclamation" *ngIf="task.status === 'PENDING'"></i>
+                    <i class="fas fa-spinner fa-spin" *ngIf="task.status === 'IN_PROGRESS'"></i>
+                    <i class="fas fa-check" *ngIf="task.status === 'COMPLETED'"></i>
+                    {{ task.status }}
+                </span>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" *ngIf="task.status === 'PENDING'" (click)="updateStatus('IN_PROGRESS')">
+                    <i class="fas fa-play"></i> Start Mission
+                </button>
+                <button class="btn-success" *ngIf="task.status === 'IN_PROGRESS'" (click)="updateStatus('COMPLETED')">
+                    <i class="fas fa-check-double"></i> Complete Mission
+                </button>
+            </div>
+        </div>
+
+        <!-- Incident Reporting Card -->
+        <div class="report-card Glass-Panel" *ngIf="task.status === 'IN_PROGRESS' || task.status === 'COMPLETED'">
+            <h2><i class="fas fa-camera text-info"></i> Situational Report</h2>
+            <p class="section-desc">Provide updates or ground evidence from the scene.</p>
+
+            <form (ngSubmit)="submitReport()" class="report-form">
+                <div class="form-group">
+                    <label>Field Observation</label>
+                    <textarea [(ngModel)]="reportObj.text" name="reportText"
+                        placeholder="Describe current situation, needs, and hazards..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Image Evidence URL (Optional)</label>
+                    <input type="text" [(ngModel)]="reportObj.imageUrl" name="imageUrl"
+                        placeholder="https://example.com/damage.jpg" />
+                </div>
+
+                <button type="submit" class="btn-info">
+                    <i class="fas fa-paper-plane"></i> Transmit Report
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<footer class="footer">
+    <p>© 2026 Disaster Management System | Responder Portal</p>
+</footer>

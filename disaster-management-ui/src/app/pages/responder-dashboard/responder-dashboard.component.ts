@@ -3,42 +3,47 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
 
+import { RescueTaskService } from '../../core/services/rescue-task.service';
+import { Router } from '@angular/router';
+import { TokenService } from '../../core/services/token.service';
+import { FormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-responder-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, FormsModule],
   templateUrl: './responder-dashboard.component.html',
   styleUrls: ['./responder-dashboard.component.css']
 })
 export class ResponderDashboardComponent implements OnInit {
 
   assignedTasks: any[] = [];
-  acknowledgedIds: number[] = [];
+  completedTasks: any[] = [];
+  responderId: number | null = null;
+  reportModel: any = {};
 
-  constructor(private disasterService: DisasterService) { }
+  constructor(
+    private rescueTaskService: RescueTaskService,
+    private disasterService: DisasterService,
+    private tokenService: TokenService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
+    this.responderId = this.tokenService.getUserId();
     this.loadTasks();
   }
 
   loadTasks() {
-    // Responders view verified (broadcasted) disasters as their potential tasks
-    this.disasterService.getVerified().subscribe((res: any) => {
-      this.assignedTasks = res;
-    });
-  }
-
-  acknowledgeTask(id: number) {
-    // In a real API, this would post an acknowledgment to a new endpoint.
-    // For now we simulate acknowledgment on the UI.
-    if (!this.acknowledgedIds.includes(id)) {
-      this.acknowledgedIds.push(id);
-      alert("Task Acknowledged! Admin has been notified of your deployment.");
+    if (this.responderId) {
+      this.rescueTaskService.getTasksByResponder(this.responderId).subscribe((res: any) => {
+        this.assignedTasks = res.filter((task: any) => task.status !== 'COMPLETED');
+        this.completedTasks = res.filter((task: any) => task.status === 'COMPLETED');
+      });
     }
   }
 
-  isAcknowledged(id: number): boolean {
-    return this.acknowledgedIds.includes(id);
+  viewDetails(taskId: number) {
+    this.router.navigate(['/responder/task', taskId]);
   }
-
 }

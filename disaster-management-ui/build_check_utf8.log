@@ -1,0 +1,72 @@
+﻿
+> disaster-management-ui@0.0.0 build
+> ng build
+
+[33mΓ¥»[39m Building...
+[32mΓ£ö[39m Building...
+[1mInitial chunk files[22m  [2m | [22m[1mNames[22m        [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mmain-VHFA2OIA.js[39m     [2m | [22m[2mmain[22m         [2m | [22m[36m495.07 kB[39m[2m | [22m              [36m122.62 kB[39m
+[32mstyles-3HHDESBA.css[39m  [2m | [22m[2mstyles[22m       [2m | [22m [36m87.14 kB[39m[2m | [22m               [36m19.46 kB[39m
+[32mpolyfills-B6TNHZQ6.js[39m[2m | [22m[2mpolyfills[22m    [2m | [22m [36m34.58 kB[39m[2m | [22m               [36m11.32 kB[39m
+
+[1m [22m                    [2m | [22m[1mInitial total[22m[2m | [22m[1m[93m616.79 kB[39m[22m[2m | [22m              [1m153.40 kB[22m
+
+Application bundle generation complete. [5.977 seconds]
+
+npm : 
+[1m[33m[33mΓû▓ [43;
+33m[[43;30mWARNING[43
+;33m][0m [1mbundle 
+initial exceeded 
+maximum budget. Budget 
+500.00 kB was not met 
+by 116.79 kB with a 
+total of 616.79 kB.[0m
+At line:1 char:1
++ npm run build > 
+build_check.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([1m[33m[33   
+ mΓ... 616.79 kB.[    
+0m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+
+
+[33mΓû▓ [43;33m[[43;
+30mWARNING[43;33m][0m
+ [1msrc/app/pages/admi
+n-dashboard/admin-dashb
+oard.component.css 
+exceeded maximum 
+budget. Budget 4.00 kB 
+was not met by 1.20 kB 
+with a total of 5.20 
+kB.[0m
+
+
+[33mΓû▓ [43;33m[[43;
+30mWARNING[43;33m][0m
+ [1mModule 'leaflet' 
+used by 'src/app/shared
+/map.component.ts' is 
+not ESM[0m
+
+  CommonJS or AMD 
+dependencies can cause 
+optimization bailouts.
+  For more information 
+see: [4mhttps://angula
+r.dev/tools/cli/build#c
+onfiguring-commonjs-dep
+endencies[0m
+
+[39m[22m
+Output location: C:\Users\Komal\Documents\infosys intership\FinalProject\disaster-management-ui\dist\disaster-management-ui
+

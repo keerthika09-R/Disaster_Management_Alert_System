@@ -1,0 +1,42 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-wrapper">
+
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Approved Disasters</h1>
+      <p>Overview of all active disasters verified by the Administrator.</p>
+    </div>
+  </div>
+
+  <div class="dashboard-section Glass-Panel">
+
+    <div class="alert-list" *ngIf="verifiedDisasters.length > 0; else noVerified">
+      <div class="alert-card animate-pop" *ngFor="let disaster of verifiedDisasters">
+        <div class="card-header">
+          <span class="badge" [ngClass]="'badge-' + (disaster.disasterType ? disaster.disasterType.toLowerCase() : '')">{{ disaster.disasterType || 'Event' }}</span>
+          <span class="status-badge normal">Verified</span>
+        </div>
+        <div class="card-body">
+          <h3>{{ disaster.location }}</h3>
+          <p>{{ disaster.description }}</p>
+          <div class="details-row">
+            <span><strong>Severity:</strong> <span class="text-danger">{{ disaster.severity || 'High' }}</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noVerified>
+      <div class="empty-state">
+        <i class="fas fa-check-circle text-muted"></i>
+        <p>No verified disasters at the moment.</p>
+      </div>
+    </ng-template>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <p>© 2026 Disaster Management System | Responder Portal</p>
+</footer>
