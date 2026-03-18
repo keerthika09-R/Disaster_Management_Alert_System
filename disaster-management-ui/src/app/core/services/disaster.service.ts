@@ -22,6 +22,10 @@ export class DisasterService {
     return this.http.get(this.api + "/resolved");
   }
 
+  getAdminAnalytics() {
+    return this.http.get<any>('http://localhost:8082/api/admin/analytics');
+  }
+
   approve(id: number) {
     return this.http.post(this.api + "/" + id + "/approve", {});
   }

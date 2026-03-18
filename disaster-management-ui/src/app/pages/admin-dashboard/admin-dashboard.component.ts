@@ -16,11 +16,30 @@ import { RescueTaskService } from '../../core/services/rescue-task.service';
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
+  readonly tabs = [
+    { id: 'overview', label: 'Overview', icon: 'fa-chart-line' },
+    { id: 'verification', label: 'Verification', icon: 'fa-clipboard-check' },
+    { id: 'operations', label: 'Operations', icon: 'fa-tower-broadcast' },
+    { id: 'history', label: 'History', icon: 'fa-history' }
+  ] as const;
+  activeTab: 'overview' | 'verification' | 'operations' | 'history' = 'overview';
 
   pendingDisasters: any[] = [];
   verifiedDisasters: any[] = [];
   resolvedDisasters: any[] = [];
   isSyncing = false;
+  analytics = {
+    totalDisasters: 0,
+    activeAlerts: 0,
+    resolvedDisasters: 0,
+    totalTasks: 0,
+    completedTasks: 0,
+    inProgressTasks: 0,
+    respondersAvailable: 0,
+    disastersByType: {} as Record<string, number>,
+    disastersByLocation: {} as Record<string, number>,
+    taskStatusBreakdown: {} as Record<string, number>
+  };
 
   responders: any[] = [];
   assignModel = {
@@ -38,6 +57,7 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit() {
     this.loadDisasters();
     this.loadResponders();
+    this.loadAnalytics();
   }
 
   loadDisasters() {
@@ -50,6 +70,16 @@ export class AdminDashboardComponent implements OnInit {
     this.http.get<any[]>('http://localhost:8082/api/users/responders').subscribe({
       next: (res) => this.responders = res,
       error: (err) => console.error('Failed to load responders', err)
+    });
+  }
+
+  loadAnalytics() {
+    this.disasterService.getAdminAnalytics().subscribe({
+      next: (res) => this.analytics = {
+        ...this.analytics,
+        ...res
+      },
+      error: (err) => console.error('Failed to load analytics', err)
     });
   }
 
@@ -67,6 +97,7 @@ export class AdminDashboardComponent implements OnInit {
           responderId: '',
           description: ''
         };
+        this.loadAnalytics();
       },
       error: (err) => {
         console.error(err);
@@ -93,6 +124,7 @@ export class AdminDashboardComponent implements OnInit {
         disaster.showAssignForm = false;
         disaster.selectedResponder = null;
         disaster.taskDescription = '';
+        this.loadAnalytics();
       },
       error: (err) => {
         console.error(err);
@@ -102,12 +134,18 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   resolveDisaster(id: number) {
-    this.disasterService.updateStatus(id, 'RESOLVED').subscribe(() => this.loadDisasters());
+    this.disasterService.updateStatus(id, 'RESOLVED').subscribe(() => {
+      this.loadDisasters();
+      this.loadAnalytics();
+    });
   }
 
   deleteDisaster(id: number) {
     if (confirm('Are you sure you want to delete this disaster event entirely? All related assigned tasks and incident reports will be lost.')) {
-      this.disasterService.delete(id).subscribe(() => this.loadDisasters());
+      this.disasterService.delete(id).subscribe(() => {
+        this.loadDisasters();
+        this.loadAnalytics();
+      });
     }
   }
 
@@ -117,6 +155,7 @@ export class AdminDashboardComponent implements OnInit {
       next: () => {
         this.isSyncing = false;
         this.loadDisasters();
+        this.loadAnalytics();
       },
       error: () => {
         this.isSyncing = false;
@@ -126,10 +165,42 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   approveDisaster(id: number) {
-    this.disasterService.approve(id).subscribe(() => this.loadDisasters());
+    this.disasterService.approve(id).subscribe(() => {
+      this.loadDisasters();
+      this.loadAnalytics();
+    });
   }
 
   rejectDisaster(id: number) {
-    this.disasterService.reject(id).subscribe(() => this.loadDisasters());
+    this.disasterService.reject(id).subscribe(() => {
+      this.loadDisasters();
+      this.loadAnalytics();
+    });
+  }
+
+  getTopLocations() {
+    return Object.entries(this.analytics.disastersByLocation).slice(0, 5);
+  }
+
+  getDisasterTypes() {
+    return Object.entries(this.analytics.disastersByType);
+  }
+
+  getTaskStatuses() {
+    return Object.entries(this.analytics.taskStatusBreakdown);
+  }
+
+  getMaxLocationCount() {
+    const counts = this.getTopLocations().map(([, count]) => count);
+    return counts.length ? Math.max(...counts) : 1;
+  }
+
+  getLocationBarHeight(count: number) {
+    const max = this.getMaxLocationCount();
+    return Math.max(18, Math.round((count / max) * 100));
+  }
+
+  setActiveTab(tab: 'overview' | 'verification' | 'operations' | 'history') {
+    this.activeTab = tab;
   }
 }

@@ -10,13 +10,5 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./landing.component.css']
 })
 export class LandingComponent {
-
-  sidebarOpen = true;
-
   constructor() {}
-
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
 }
