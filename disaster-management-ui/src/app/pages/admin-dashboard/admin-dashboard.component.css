@@ -206,6 +206,145 @@
   line-height: 1.5;
 }
 
+.ops-summary {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fbff;
+  border: 1px solid #dbe7f3;
+}
+
+.ops-summary.empty {
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.ops-summary.empty p {
+  margin: 0;
+  color: #64748b;
+}
+
+.ops-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ops-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ops-pill.total {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.ops-pill.progress {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.ops-pill.completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.ops-pill.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.task-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.task-desc {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 0.88rem;
+}
+
+.task-status {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.task-status.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.task-status.in_progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.task-status.completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.report-preview {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #dbe7f3;
+}
+
+.report-preview.compact p {
+  -webkit-line-clamp: 2;
+}
+
+.report-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.report-preview p {
+  margin: 0 0 6px;
+  color: #334155;
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+}
+
+.report-preview small {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
 .card-footer {
   margin-top: 20px;
   display: flex;

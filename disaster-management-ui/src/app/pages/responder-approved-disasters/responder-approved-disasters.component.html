@@ -9,30 +9,48 @@
     </div>
   </div>
 
-  <div class="dashboard-section Glass-Panel">
+  <div class="dashboard-layout">
+    <aside class="sidebar Glass-Panel">
+      <nav class="sidebar-nav">
+        <button (click)="goToAssignments()">
+          <i class="fas fa-tasks"></i> Active Assignments
+        </button>
+        <button class="active">
+          <i class="fas fa-globe"></i> Approved Disasters
+        </button>
+        <button (click)="goToAssignments('history')">
+          <i class="fas fa-history"></i> History
+        </button>
+      </nav>
+    </aside>
 
-    <div class="alert-list" *ngIf="verifiedDisasters.length > 0; else noVerified">
-      <div class="alert-card animate-pop" *ngFor="let disaster of verifiedDisasters">
-        <div class="card-header">
-          <span class="badge" [ngClass]="'badge-' + (disaster.disasterType ? disaster.disasterType.toLowerCase() : '')">{{ disaster.disasterType || 'Event' }}</span>
-          <span class="status-badge normal">Verified</span>
-        </div>
-        <div class="card-body">
-          <h3>{{ disaster.location }}</h3>
-          <p>{{ disaster.description }}</p>
-          <div class="details-row">
-            <span><strong>Severity:</strong> <span class="text-danger">{{ disaster.severity || 'High' }}</span></span>
+    <main class="main-content">
+      <div class="dashboard-section Glass-Panel">
+
+        <div class="alert-list" *ngIf="verifiedDisasters.length > 0; else noVerified">
+          <div class="alert-card animate-pop" *ngFor="let disaster of verifiedDisasters">
+            <div class="card-header">
+              <span class="badge" [ngClass]="'badge-' + (disaster.disasterType ? disaster.disasterType.toLowerCase() : '')">{{ disaster.disasterType || 'Event' }}</span>
+              <span class="status-badge normal">Verified</span>
+            </div>
+            <div class="card-body">
+              <h3>{{ disaster.location }}</h3>
+              <p>{{ disaster.description }}</p>
+              <div class="details-row">
+                <span><strong>Severity:</strong> <span class="text-danger">{{ disaster.severity || 'High' }}</span></span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <ng-template #noVerified>
-      <div class="empty-state">
-        <i class="fas fa-check-circle text-muted"></i>
-        <p>No verified disasters at the moment.</p>
+        <ng-template #noVerified>
+          <div class="empty-state">
+            <i class="fas fa-check-circle text-muted"></i>
+            <p>No verified disasters at the moment.</p>
+          </div>
+        </ng-template>
       </div>
-    </ng-template>
+    </main>
   </div>
 
 </div>

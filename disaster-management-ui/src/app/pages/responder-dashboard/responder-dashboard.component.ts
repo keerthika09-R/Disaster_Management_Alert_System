@@ -4,7 +4,7 @@ import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
 
 import { RescueTaskService } from '../../core/services/rescue-task.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TokenService } from '../../core/services/token.service';
 import { FormsModule } from '@angular/forms';
 
@@ -29,11 +29,16 @@ export class ResponderDashboardComponent implements OnInit, OnDestroy {
     private rescueTaskService: RescueTaskService,
     private disasterService: DisasterService,
     private tokenService: TokenService,
+    private route: ActivatedRoute,
     private router: Router
   ) { }
 
   ngOnInit() {
     this.responderId = this.tokenService.getUserId();
+    this.route.queryParamMap.subscribe(params => {
+      const tab = params.get('tab');
+      this.activeTab = tab === 'history' ? 'history' : 'active';
+    });
     this.loadTasks();
 
     this.pollingInterval = setInterval(() => {
@@ -58,5 +63,9 @@ export class ResponderDashboardComponent implements OnInit, OnDestroy {
 
   viewDetails(taskId: number) {
     this.router.navigate(['/responder/task', taskId]);
+  }
+
+  goToApprovedDisasters() {
+    this.router.navigate(['/responder/approved']);
   }
 }

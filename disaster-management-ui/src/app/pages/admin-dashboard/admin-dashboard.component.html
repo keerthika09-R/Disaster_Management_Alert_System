@@ -88,6 +88,36 @@
                 <div class="card-body">
                   <h3>{{ disaster.location }}</h3>
                   <p>{{ disaster.description }}</p>
+                  <div class="ops-summary" *ngIf="disaster.taskSummary?.total">
+                    <div class="ops-metrics">
+                      <span class="ops-pill total">{{ disaster.taskSummary.total }} Assignment{{ disaster.taskSummary.total === 1 ? '' : 's' }}</span>
+                      <span class="ops-pill progress" *ngIf="disaster.taskSummary.inProgress > 0">{{ disaster.taskSummary.inProgress }} In Progress</span>
+                      <span class="ops-pill completed" *ngIf="disaster.taskSummary.completed > 0">{{ disaster.taskSummary.completed }} Completed</span>
+                      <span class="ops-pill pending" *ngIf="disaster.taskSummary.pending > 0">{{ disaster.taskSummary.pending }} Pending</span>
+                    </div>
+                    <div class="task-list">
+                      <div class="task-row" *ngFor="let task of disaster.assignedTasks">
+                        <div>
+                          <strong>{{ task.responder?.fullName || 'Responder' }}</strong>
+                          <span class="task-desc">{{ task.description }}</span>
+                        </div>
+                        <span class="task-status" [ngClass]="task.status?.toLowerCase()">{{ task.status }}</span>
+                      </div>
+                    </div>
+                    <div class="report-preview" *ngIf="disaster.latestReport">
+                      <div class="report-title">
+                        <i class="fas fa-file-medical-alt"></i> Latest situational report
+                      </div>
+                      <p>{{ disaster.latestReport.reportText }}</p>
+                      <small>
+                        {{ disaster.reportCount }} report{{ disaster.reportCount === 1 ? '' : 's' }} received
+                        • {{ disaster.latestReport.timestamp | date:'medium' }}
+                      </small>
+                    </div>
+                  </div>
+                  <div class="ops-summary empty" *ngIf="!disaster.taskSummary?.total">
+                    <p>No responder assignments for this disaster yet.</p>
+                  </div>
                 </div>
                 <div class="card-footer" style="flex-direction: column; gap: 10px;">
                   <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -193,6 +223,18 @@
                 <div class="card-body">
                   <h3>{{ disaster.location }}</h3>
                   <p>{{ disaster.description }}</p>
+                  <div class="ops-summary" *ngIf="disaster.taskSummary?.total">
+                    <div class="ops-metrics">
+                      <span class="ops-pill total">{{ disaster.taskSummary.total }} Assignment{{ disaster.taskSummary.total === 1 ? '' : 's' }}</span>
+                      <span class="ops-pill completed" *ngIf="disaster.taskSummary.completed > 0">{{ disaster.taskSummary.completed }} Completed</span>
+                    </div>
+                    <div class="report-preview compact" *ngIf="disaster.latestReport">
+                      <div class="report-title">
+                        <i class="fas fa-file-medical-alt"></i> Final update
+                      </div>
+                      <p>{{ disaster.latestReport.reportText }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -315,7 +357,7 @@
                       <td class="td-type"><span class="type-pill">{{ record.disasterType }}</span></td>
                       <td class="td-location">{{ record.location }}</td>
                       <td><span class="modern-badge" [ngClass]="getSeverityBadgeClass(record.severity)">{{ record.severity }}</span></td>
-                      <td class="td-team"><span class="team-bubble">{{ record.assignedResponders?.length || 0 }} Responders</span></td>
+                      <td class="td-team"><span class="team-bubble">{{ record.taskSummary?.completed || 0 }}/{{ record.taskSummary?.total || 0 }} Missions Completed</span></td>
                     </tr>
                     <tr *ngIf="resolvedDisasters.length === 0">
                       <td colspan="5" class="empty-state-modern" style="padding: 50px;">

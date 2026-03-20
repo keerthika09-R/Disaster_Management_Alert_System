@@ -5,16 +5,6 @@
   </div>
 
   <div class="nav-right">
-    
-    <!-- Using generic links for now, since auth state isn't directly observable here without token service. To keep it simple, they'll just always be clickable if you are on those pages -->
-    <a routerLink="/responder/dashboard" class="nav-link" *ngIf="isResponder()">
-      <i class="fas fa-tasks"></i> Active Assignments
-    </a>
-
-    <a routerLink="/responder/approved" class="nav-link" *ngIf="isResponder()">
-      <i class="fas fa-globe"></i> Approved Disasters
-    </a>
-
     <a routerLink="/profile" class="profile-link">
       <i class="fas fa-user-circle"></i> Profile
     </a>

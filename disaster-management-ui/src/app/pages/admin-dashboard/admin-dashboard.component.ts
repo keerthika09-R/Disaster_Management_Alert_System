@@ -7,6 +7,7 @@ import { MapComponent } from '../../shared/map.component';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RescueTaskService } from '../../core/services/rescue-task.service';
+import { IncidentReportService } from '../../core/services/incident-report.service';
 
 export interface AnalyticsData {
   totalFloods: number;
@@ -30,6 +31,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   pendingDisasters: any[] = [];
   verifiedDisasters: any[] = [];
   resolvedDisasters: any[] = [];
+  allTasks: any[] = [];
+  allReports: any[] = [];
   isSyncing = false;
 
   analyticsData: AnalyticsData | null = null;
@@ -47,18 +50,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private disasterService: DisasterService,
     private http: HttpClient,
     private rescueTaskService: RescueTaskService,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private incidentReportService: IncidentReportService
   ) { }
 
   ngOnInit() {
     this.loadDisasters();
     this.loadResponders();
+    this.loadOperationalData();
     this.loadAnalytics();
     
     // Pseudo real-time updates every 10 seconds for all views
     this.pollingInterval = setInterval(() => {
       this.loadDisasters();
       this.loadResponders();
+      this.loadOperationalData();
       this.loadAnalytics();
     }, 10000);
   }
@@ -78,8 +84,28 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   loadDisasters() {
     this.disasterService.getPending().subscribe((res: any) => this.pendingDisasters = res);
-    this.disasterService.getVerified().subscribe((res: any) => this.verifiedDisasters = res);
-    this.disasterService.getResolved().subscribe((res: any) => this.resolvedDisasters = res);
+    this.disasterService.getVerified().subscribe((res: any) => this.verifiedDisasters = this.decorateDisasters(res));
+    this.disasterService.getResolved().subscribe((res: any) => this.resolvedDisasters = this.decorateDisasters(res));
+  }
+
+  loadOperationalData() {
+    this.rescueTaskService.getAllTasks().subscribe({
+      next: (res: any[]) => {
+        this.allTasks = res;
+        this.verifiedDisasters = this.decorateDisasters(this.verifiedDisasters);
+        this.resolvedDisasters = this.decorateDisasters(this.resolvedDisasters);
+      },
+      error: (err) => console.error('Failed to load tasks', err)
+    });
+
+    this.incidentReportService.getAllReports().subscribe({
+      next: (res: any[]) => {
+        this.allReports = res;
+        this.verifiedDisasters = this.decorateDisasters(this.verifiedDisasters);
+        this.resolvedDisasters = this.decorateDisasters(this.resolvedDisasters);
+      },
+      error: (err) => console.error('Failed to load incident reports', err)
+    });
   }
 
   loadResponders() {
@@ -103,6 +129,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           responderId: '',
           description: ''
         };
+        this.loadOperationalData();
       },
       error: (err) => {
         console.error(err);
@@ -129,6 +156,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         disaster.showAssignForm = false;
         disaster.selectedResponder = null;
         disaster.taskDescription = '';
+        this.loadOperationalData();
       },
       error: (err) => {
         console.error(err);
@@ -178,5 +206,32 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       case 'low': return 'badge-low';
       default: return 'badge-low';
     }
+  }
+
+  decorateDisasters(disasters: any[] = []): any[] {
+    return disasters.map(disaster => {
+      const tasks = this.allTasks.filter(task => task.disasterEvent?.id === disaster.id);
+      const taskIds = new Set(tasks.map(task => task.id));
+      const reports = this.allReports
+        .filter(report => taskIds.has(report.rescueTask?.id))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      const latestReport = reports[0] || null;
+      const completedTasks = tasks.filter(task => task.status === 'COMPLETED').length;
+      const inProgressTasks = tasks.filter(task => task.status === 'IN_PROGRESS').length;
+      const pendingTasks = tasks.filter(task => task.status === 'PENDING').length;
+
+      return {
+        ...disaster,
+        assignedTasks: tasks,
+        taskSummary: {
+          total: tasks.length,
+          completed: completedTasks,
+          inProgress: inProgressTasks,
+          pending: pendingTasks
+        },
+        latestReport,
+        reportCount: reports.length
+      };
+    });
   }
 }

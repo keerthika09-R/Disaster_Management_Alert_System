@@ -18,6 +18,9 @@
         <button (click)="activeTab = 'active'" [class.active]="activeTab === 'active'">
           <i class="fas fa-tasks"></i> Active Assignments
         </button>
+        <button (click)="goToApprovedDisasters()">
+          <i class="fas fa-globe"></i> Approved Disasters
+        </button>
         <button (click)="activeTab = 'history'" [class.active]="activeTab === 'history'">
           <i class="fas fa-history"></i> History
         </button>
