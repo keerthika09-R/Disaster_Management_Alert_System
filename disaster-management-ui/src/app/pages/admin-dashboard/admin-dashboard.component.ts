@@ -1,12 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
-
+import { AnalyticsService } from '../../core/services/analytics.service';
 import { MapComponent } from '../../shared/map.component';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RescueTaskService } from '../../core/services/rescue-task.service';
+
+export interface AnalyticsData {
+  totalFloods: number;
+  totalFires: number;
+  avgResponseTimeMinutes: number;
+  totalRespondersDeployed: number;
+  alertsByRegion: { [key: string]: number };
+  alertsBroadcasted: number;
+  alertsAcknowledged: number;
+}
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -15,12 +25,16 @@ import { RescueTaskService } from '../../core/services/rescue-task.service';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   pendingDisasters: any[] = [];
   verifiedDisasters: any[] = [];
   resolvedDisasters: any[] = [];
   isSyncing = false;
+
+  analyticsData: AnalyticsData | null = null;
+  pollingInterval: any;
+  activeTab: string = 'pending';
 
   responders: any[] = [];
   assignModel = {
@@ -32,12 +46,34 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private disasterService: DisasterService,
     private http: HttpClient,
-    private rescueTaskService: RescueTaskService
+    private rescueTaskService: RescueTaskService,
+    private analyticsService: AnalyticsService
   ) { }
 
   ngOnInit() {
     this.loadDisasters();
     this.loadResponders();
+    this.loadAnalytics();
+    
+    // Pseudo real-time updates every 10 seconds for all views
+    this.pollingInterval = setInterval(() => {
+      this.loadDisasters();
+      this.loadResponders();
+      this.loadAnalytics();
+    }, 10000);
+  }
+
+  ngOnDestroy() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+  }
+
+  loadAnalytics() {
+    this.analyticsService.getDashboardAnalytics().subscribe({
+      next: (res) => this.analyticsData = res,
+      error: (err) => console.error("Could not load analytics", err)
+    });
   }
 
   loadDisasters() {
@@ -131,5 +167,16 @@ export class AdminDashboardComponent implements OnInit {
 
   rejectDisaster(id: number) {
     this.disasterService.reject(id).subscribe(() => this.loadDisasters());
+  }
+
+  getSeverityBadgeClass(severity: string): string {
+    if (!severity) return 'badge-low';
+    switch (severity.toLowerCase()) {
+      case 'critical': return 'badge-critical';
+      case 'high': return 'badge-high';
+      case 'medium': return 'badge-medium';
+      case 'low': return 'badge-low';
+      default: return 'badge-low';
+    }
   }
 }

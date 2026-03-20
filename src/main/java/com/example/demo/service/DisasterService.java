@@ -62,6 +62,9 @@ public class DisasterService {
     public DisasterEvent updateEventStatus(Long id, String status) {
         DisasterEvent event = repository.findById(id).orElseThrow();
         event.setStatus(status);
+        if ("RESOLVED".equalsIgnoreCase(status)) {
+            event.setResolvedAt(java.time.LocalDateTime.now());
+        }
         return repository.save(event);
     }
 

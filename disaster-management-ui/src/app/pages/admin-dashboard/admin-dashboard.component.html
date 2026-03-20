@@ -13,231 +13,326 @@
     </button>
   </div>
 
-  <div class="dashboard-grid">
+  <div class="dashboard-layout">
+    <aside class="sidebar Glass-Panel">
+      <nav class="sidebar-nav">
+        <button (click)="activeTab = 'pending'" [class.active]="activeTab === 'pending'">
+          <i class="fas fa-exclamation-circle"></i> Pending Alerts
+        </button>
+        <button (click)="activeTab = 'live'" [class.active]="activeTab === 'live'">
+          <i class="fas fa-satellite-dish"></i> Live Events
+        </button>
+        <button (click)="activeTab = 'tasks'" [class.active]="activeTab === 'tasks'">
+          <i class="fas fa-tasks"></i> Assign Tasks
+        </button>
+        <button (click)="activeTab = 'history'" [class.active]="activeTab === 'history'">
+          <i class="fas fa-history"></i> History
+        </button>
+        <button (click)="activeTab = 'analytics'" [class.active]="activeTab === 'analytics'">
+          <i class="fas fa-chart-line"></i> Analytics
+        </button>
+      </nav>
+    </aside>
 
-    <!-- Pending Disasters Section -->
-    <div class="dashboard-section Glass-Panel">
-      <h2><i class="fas fa-exclamation-circle text-warning"></i> Pending Verification</h2>
-      <p class="section-desc">Disasters fetched from external APIs waiting for your approval.</p>
+    <main class="main-content">
+      <div class="dashboard-grid">
 
-      <div class="alert-list" *ngIf="pendingDisasters.length > 0; else noPending">
-        <div class="alert-card animate-pop" *ngFor="let disaster of pendingDisasters">
-          <div class="card-header">
-            <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType
-              }}</span>
-            <span class="severity">{{ disaster.severity || 'High' }}</span>
-          </div>
-          <div class="card-body">
-            <h3>{{ disaster.location }}</h3>
-            <p>{{ disaster.description }}</p>
-          </div>
-          <div class="card-footer actions">
-            <button class="btn-approve" (click)="approveDisaster(disaster.id)">
-              <i class="fas fa-check"></i> Approve & Broadcast
-            </button>
-            <button class="btn-reject" (click)="rejectDisaster(disaster.id)">
-              <i class="fas fa-times"></i> Reject
-            </button>
-          </div>
-        </div>
-      </div>
-      <ng-template #noPending>
-        <div class="empty-state">
-          <i class="fas fa-clipboard-check"></i>
-          <p>No pending alerts. All clear!</p>
-        </div>
-      </ng-template>
-    </div>
+        <!-- Pending Disasters Section -->
+        <ng-container *ngIf="activeTab === 'pending'">
+          <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
+            <h2><i class="fas fa-exclamation-circle text-warning"></i> Pending Verification</h2>
+            <p class="section-desc">Disasters fetched from external APIs waiting for your approval.</p>
 
-    <!-- Verified Disasters Section -->
-    <div class="dashboard-section Glass-Panel">
-      <h2><i class="fas fa-tower-broadcast text-success"></i> Broadcasted Alerts</h2>
-      <p class="section-desc">Active alerts that have been verified and broadcasted.</p>
+            <div class="alert-list" *ngIf="pendingDisasters.length > 0; else noPending">
+              <div class="alert-card animate-pop" *ngFor="let disaster of pendingDisasters">
+                <div class="card-header">
+                  <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType }}</span>
+                  <span class="severity">{{ disaster.severity || 'High' }}</span>
+                </div>
+                <div class="card-body">
+                  <h3>{{ disaster.location }}</h3>
+                  <p>{{ disaster.description }}</p>
+                </div>
+                <div class="card-footer actions">
+                  <button class="btn-approve" (click)="approveDisaster(disaster.id)">
+                    <i class="fas fa-check"></i> Approve & Broadcast
+                  </button>
+                  <button class="btn-reject" (click)="rejectDisaster(disaster.id)">
+                    <i class="fas fa-times"></i> Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+            <ng-template #noPending>
+              <div class="empty-state">
+                <i class="fas fa-clipboard-check"></i>
+                <p>No pending alerts. All clear!</p>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
 
-      <div class="alert-list" *ngIf="verifiedDisasters.length > 0; else noVerified">
-        <div class="alert-card active-card animate-slide" *ngFor="let disaster of verifiedDisasters">
-          <div class="card-header">
-            <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType
-              }}</span>
-            <span class="status-live"><i class="fas fa-circle active-dot"></i> LIVE</span>
+        <!-- Verified Disasters Section -->
+        <ng-container *ngIf="activeTab === 'live'">
+          <!-- Live Alerts -->
+          <div class="dashboard-section Glass-Panel">
+            <h2><i class="fas fa-tower-broadcast text-success"></i> Broadcasted Alerts</h2>
+            <p class="section-desc">Active alerts that have been verified and broadcasted.</p>
+
+            <div class="alert-list" *ngIf="verifiedDisasters.length > 0; else noVerified">
+              <div class="alert-card active-card animate-slide" *ngFor="let disaster of verifiedDisasters">
+                <div class="card-header">
+                  <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType }}</span>
+                  <span class="status-live"><i class="fas fa-circle active-dot"></i> LIVE</span>
+                </div>
+                <div class="card-body">
+                  <h3>{{ disaster.location }}</h3>
+                  <p>{{ disaster.description }}</p>
+                </div>
+                <div class="card-footer" style="flex-direction: column; gap: 10px;">
+                  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-primary" (click)="disaster.showAssignForm = !disaster.showAssignForm"
+                      style="flex: 1; padding: 5px;">
+                      <i class="fas fa-users"></i> Assign Responder
+                    </button>
+                    <button class="btn-success" (click)="resolveDisaster(disaster.id)"
+                      style="flex: 1; padding: 5px; border-radius: 4px; border: none; cursor: pointer;">
+                      <i class="fas fa-check-circle"></i> Resolve
+                    </button>
+                    <button class="btn-danger" (click)="deleteDisaster(disaster.id)"
+                      style="flex: 1; padding: 5px; background: #ef4444; color: white; border-radius: 4px; border: none; cursor: pointer;">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+
+                  <div *ngIf="disaster.showAssignForm"
+                    style="width: 100%; margin-top: 10px; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 5px;">
+                    <select [(ngModel)]="disaster.selectedResponder"
+                      style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 5px;">
+                      <option [value]="undefined" disabled selected>-- Choose Responder --</option>
+                      <option *ngFor="let responder of responders" [value]="responder.id">{{ responder.fullName }}</option>
+                    </select>
+                    <input type="text" [(ngModel)]="disaster.taskDescription" placeholder="Task description..."
+                      style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px;" />
+                    <button (click)="assignTaskToDisaster(disaster)" class="btn-approve"
+                      style="width: 100%; padding: 8px;">Deploy Responder</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noVerified>
+              <div class="empty-state">
+                <i class="fas fa-shield-alt"></i>
+                <p>No active alerts right now.</p>
+              </div>
+            </ng-template>
           </div>
-          <div class="card-body">
-            <h3>{{ disaster.location }}</h3>
-            <p>{{ disaster.description }}</p>
+
+          <!-- Active Operations Map Section -->
+          <div class="dashboard-section Glass-Panel">
+            <h2><i class="fas fa-map-marked-alt text-primary"></i> Live Operations Map</h2>
+            <p class="section-desc">Global tracking of verified disaster zones and rescue sites.</p>
+            <div style="margin-top: 15px;">
+              <app-map [disasterEvents]="verifiedDisasters"></app-map>
+            </div>
           </div>
-          <div class="card-footer" style="flex-direction: column; gap: 10px;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-              <button class="btn-primary" (click)="disaster.showAssignForm = !disaster.showAssignForm"
-                style="flex: 1; padding: 5px;">
-                <i class="fas fa-users"></i> Assign Responder
-              </button>
-              <button class="btn-success" (click)="resolveDisaster(disaster.id)"
-                style="flex: 1; padding: 5px; border-radius: 4px; border: none; cursor: pointer;">
-                <i class="fas fa-check-circle"></i> Resolve
-              </button>
-              <button class="btn-danger" (click)="deleteDisaster(disaster.id)"
-                style="flex: 1; padding: 5px; background: #ef4444; color: white; border-radius: 4px; border: none; cursor: pointer;">
-                <i class="fas fa-trash"></i> Delete
-              </button>
+        </ng-container>
+
+        <!-- Task Assignment Section -->
+        <ng-container *ngIf="activeTab === 'tasks'">
+          <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
+            <h2><i class="fas fa-tasks text-warning"></i> Assign Rescue Task to Specific Zones</h2>
+            <p class="section-desc">Deploy responder teams to verified disaster zones.</p>
+
+            <div class="assignment-form"
+              style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; align-items: end; background: rgba(0,0,0,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+              <div>
+                <label style="display: block; margin-bottom: 8px; color: #486581; font-weight: 600; font-size: 0.9rem;">Select Responder</label>
+                <select [(ngModel)]="assignModel.responderId"
+                  style="width: 100%; padding: 10px; border-radius: 8px; background: white; border: 1px solid #d9e2ec; color: #334e68; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: border-color 0.2s;">
+                  <option value="" disabled selected>-- Choose Responder --</option>
+                  <option *ngFor="let responder of responders" [value]="responder.id">{{ responder.fullName }} ({{
+                    responder.email }})</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 8px; color: #486581; font-weight: 600; font-size: 0.9rem;">Select Specific Disaster Zone</label>
+                <select [(ngModel)]="assignModel.disasterEventId"
+                  style="width: 100%; padding: 10px; border-radius: 8px; background: white; border: 1px solid #d9e2ec; color: #334e68; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: border-color 0.2s;">
+                  <option value="" disabled selected>-- Choose Zone --</option>
+                  <option *ngFor="let disaster of verifiedDisasters" [value]="disaster.id">{{ disaster.location }} ({{
+                    disaster.title || disaster.disasterType }})</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 8px; color: #486581; font-weight: 600; font-size: 0.9rem;">Task Description</label>
+                <input type="text" [(ngModel)]="assignModel.description" placeholder="e.g. Evacuate sector A"
+                  style="width: 100%; padding: 10px; border-radius: 8px; background: white; border: 1px solid #d9e2ec; color: #334e68; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: border-color 0.2s;" />
+              </div>
+              <div style="grid-column: span 3; text-align: right; margin-top: 10px;">
+                <button (click)="assignTask()" class="btn-sync" style="display: inline-flex; width: auto; padding: 12px 24px;">
+                  <i class="fas fa-paper-plane"></i> Deploy Responder to Zone
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- History / Resolved Disasters Section -->
+        <ng-container *ngIf="activeTab === 'history'">
+          <div class="dashboard-section Glass-Panel" style="grid-column: span 2;" *ngIf="resolvedDisasters.length > 0">
+            <h2><i class="fas fa-history text-secondary"></i> History (Resolved Disasters)</h2>
+            <p class="section-desc">Previously active disasters and alerts that have been successfully resolved.</p>
+
+            <div class="alert-list">
+              <div class="alert-card completed-card" *ngFor="let disaster of resolvedDisasters" style="border-left-color: #6c757d;">
+                <div class="card-header">
+                  <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType }}</span>
+                  <span class="status-badge" style="color: #6c757d;"><i class="fas fa-check-double"></i> Resolved</span>
+                </div>
+                <div class="card-body">
+                  <h3>{{ disaster.location }}</h3>
+                  <p>{{ disaster.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Analytics Dashboard Section (Milestone 5) -->
+        <ng-container *ngIf="activeTab === 'analytics'">
+          <div class="analytics-wrapper" style="grid-column: span 2;">
+            
+            <div class="analytics-header">
+              <h2>Analytics & Reporting Dashboard</h2>
+              <p>Historical data on response times and disaster frequencies.</p>
             </div>
 
-            <div *ngIf="disaster.showAssignForm"
-              style="width: 100%; margin-top: 10px; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 5px;">
-              <select [(ngModel)]="disaster.selectedResponder"
-                style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 5px;">
-                <option [value]="undefined" disabled selected>-- Choose Responder --</option>
-                <option *ngFor="let responder of responders" [value]="responder.id">{{ responder.fullName }}</option>
-              </select>
-              <input type="text" [(ngModel)]="disaster.taskDescription" placeholder="Task description..."
-                style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px;" />
-              <button (click)="assignTaskToDisaster(disaster)" class="btn-approve"
-                style="width: 100%; padding: 8px;">Deploy Responder</button>
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-icon water"><i class="fas fa-water"></i></div>
+                <div class="kpi-data">
+                  <span class="kpi-label">TOTAL FLOODS</span>
+                  <span class="kpi-value">{{ analyticsData?.totalFloods || 0 }}</span>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon fire"><i class="fas fa-fire-alt"></i></div>
+                <div class="kpi-data">
+                  <span class="kpi-label">FIRES SUPPRESSED</span>
+                  <span class="kpi-value">{{ analyticsData?.totalFires || 0 }}</span>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon time"><i class="fas fa-stopwatch"></i></div>
+                <div class="kpi-data">
+                  <span class="kpi-label">AVG. RESPONSE</span>
+                  <span class="kpi-value">{{ analyticsData?.avgResponseTimeMinutes || 0 }} mins</span>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon users"><i class="fas fa-users-cog"></i></div>
+                <div class="kpi-data">
+                  <span class="kpi-label">DEPLOYMENTS</span>
+                  <span class="kpi-value">{{ analyticsData?.totalRespondersDeployed || 0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-charts-grid">
+              
+              <!-- Frequency Bar Chart (Horizontal Layout) -->
+              <div class="analytics-card bar-chart">
+                <h3 class="card-title">Alert Frequency by Region</h3>
+                
+                <div class="horizontal-chart-wrapper" *ngIf="analyticsData?.alertsByRegion">
+                  <div class="h-chart-row" *ngFor="let region of analyticsData!.alertsByRegion | keyvalue">
+                    <div class="h-chart-label" [title]="region.key">{{ region.key }}</div>
+                    <div class="h-chart-bar-container">
+                      <div class="h-chart-fill" [style.width.%]="$any(region.value) * 15" style="min-width: 5%; max-width: 100%;"></div>
+                    </div>
+                    <div class="h-chart-value">{{ region.value }}</div>
+                  </div>
+                  
+                  <div *ngIf="(analyticsData!.alertsByRegion | keyvalue).length === 0" class="empty-state-modern">
+                    <p>No regional data mapped.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notification Insights (Stacked Cards) -->
+              <div class="analytics-card insights">
+                <h3 class="card-title">Notification Insights</h3>
+                <div class="insights-stack">
+                  
+                  <div class="insight-row primary">
+                    <div class="insight-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div class="insight-meta">
+                       <span class="insight-num">{{ analyticsData?.alertsBroadcasted || 0 }}</span>
+                       <span class="insight-text">Alerts Broadcasted</span>
+                    </div>
+                  </div>
+                  
+                  <div class="insight-row success">
+                    <div class="insight-icon"><i class="fas fa-check-double"></i></div>
+                    <div class="insight-meta">
+                       <span class="insight-num">{{ analyticsData?.alertsAcknowledged || 0 }}</span>
+                       <span class="insight-text">Alerts Acknowledged</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              
             </div>
           </div>
-        </div>
-      </div>
-      <ng-template #noVerified>
-        <div class="empty-state">
-          <i class="fas fa-shield-alt"></i>
-          <p>No active alerts right now.</p>
-        </div>
-      </ng-template>
-    </div>
+        </ng-container>
 
-    <!-- Active Operations Map Section -->
-    <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
-      <h2><i class="fas fa-map-marked-alt text-primary"></i> Live Disaster Operations</h2>
-      <p class="section-desc">Real-time global tracking of verified disaster zones and rescue sites.</p>
+        <!-- History Section (Milestone 5) -->
+        <ng-container *ngIf="activeTab === 'history'">
+          <div class="analytics-wrapper" style="grid-column: span 2;">
+            
+            <div class="analytics-header">
+              <h2>Resolved Disaster History</h2>
+              <p>View a historical log of all successfully resolved operations.</p>
+            </div>
 
-      <div style="margin-top: 15px;">
-        <app-map [disasterEvents]="verifiedDisasters"></app-map>
-      </div>
-    </div>
-
-    <!-- Task Assignment Section -->
-    <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
-      <h2><i class="fas fa-tasks text-warning"></i> Assign Rescue Task to Specific Zones</h2>
-      <p class="section-desc">Deploy responder teams to verified disaster zones.</p>
-
-      <div class="assignment-form"
-        style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: end;">
-        <div>
-          <label style="display: block; margin-bottom: 5px; color: #cbd5e1;">Select Responder</label>
-          <select [(ngModel)]="assignModel.responderId"
-            style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
-            <option value="" disabled selected>-- Choose Responder --</option>
-            <option *ngFor="let responder of responders" [value]="responder.id">{{ responder.fullName }} ({{
-              responder.email }})</option>
-          </select>
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 5px; color: #cbd5e1;">Select Specific Disaster Zone</label>
-          <select [(ngModel)]="assignModel.disasterEventId"
-            style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
-            <option value="" disabled selected>-- Choose Zone --</option>
-            <option *ngFor="let disaster of verifiedDisasters" [value]="disaster.id">{{ disaster.location }} ({{
-              disaster.title || disaster.disasterType }})</option>
-          </select>
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 5px; color: #cbd5e1;">Task Description</label>
-          <input type="text" [(ngModel)]="assignModel.description" placeholder="e.g. Evacuate sector A"
-            style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;" />
-        </div>
-        <div style="grid-column: span 3; text-align: right;">
-          <button (click)="assignTask()" class="btn-approve" style="padding: 10px 20px;">
-            <i class="fas fa-paper-plane"></i> Deploy Responder to Zone
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- History / Resolved Disasters Section -->
-    <div class="dashboard-section Glass-Panel" style="grid-column: span 2;" *ngIf="resolvedDisasters.length > 0">
-      <h2><i class="fas fa-history text-secondary"></i> History (Resolved Disasters)</h2>
-      <p class="section-desc">Previously active disasters and alerts that have been successfully resolved.</p>
-
-      <div class="alert-list">
-        <div class="alert-card completed-card" *ngFor="let disaster of resolvedDisasters" style="border-left-color: #6c757d;">
-          <div class="card-header">
-            <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType }}</span>
-            <span class="status-badge" style="color: #6c757d;"><i class="fas fa-check-double"></i> Resolved</span>
+            <div class="analytics-card history-card" style="padding: 0;">
+              <div class="modern-table-container">
+                <table class="modern-data-table">
+                  <thead>
+                    <tr>
+                      <th><i class="fas fa-calendar-check" style="color: #94a3b8; margin-right: 8px;"></i> Date Resolved</th>
+                      <th><i class="fas fa-exclamation-triangle" style="color: #94a3b8; margin-right: 8px;"></i> Event Type</th>
+                      <th><i class="fas fa-map-marker-alt" style="color: #94a3b8; margin-right: 8px;"></i> Location</th>
+                      <th><i class="fas fa-thermometer-half" style="color: #94a3b8; margin-right: 8px;"></i> Impact</th>
+                      <th><i class="fas fa-users-cog" style="color: #94a3b8; margin-right: 8px;"></i> Logistics</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let record of resolvedDisasters" class="table-row-modern hover-bounce">
+                      <td class="td-date">{{ record.updatedAt | date:'medium' }}</td>
+                      <td class="td-type"><span class="type-pill">{{ record.disasterType }}</span></td>
+                      <td class="td-location">{{ record.location }}</td>
+                      <td><span class="modern-badge" [ngClass]="getSeverityBadgeClass(record.severity)">{{ record.severity }}</span></td>
+                      <td class="td-team"><span class="team-bubble">{{ record.assignedResponders?.length || 0 }} Responders</span></td>
+                    </tr>
+                    <tr *ngIf="resolvedDisasters.length === 0">
+                      <td colspan="5" class="empty-state-modern" style="padding: 50px;">
+                        <i class="fas fa-folder-open" style="font-size: 2.5rem; margin-bottom: 12px; color: #cbd5e1; display: block;"></i>
+                        No historical operation logs available.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <h3>{{ disaster.location }}</h3>
-            <p>{{ disaster.description }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- Analytics Dashboard Section (Milestone 5) -->
-    <div class="dashboard-section Glass-Panel analytics-panel" style="grid-column: span 2;">
-      <h2><i class="fas fa-chart-line text-primary"></i> Analytics & Reporting Dashboard</h2>
-      <p class="section-desc">Historical data on response times and disaster frequencies.</p>
-
-      <div class="analytics-grid">
-
-        <div class="stat-card">
-          <div class="stat-icon bg-blue"><i class="fas fa-water"></i></div>
-          <div class="stat-info">
-            <h4>Total Floods Handled</h4>
-            <span class="stat-number">42</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon bg-red"><i class="fas fa-fire-alt"></i></div>
-          <div class="stat-info">
-            <h4>Fires Suppressed</h4>
-            <span class="stat-number">18</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon bg-green"><i class="fas fa-stopwatch"></i></div>
-          <div class="stat-info">
-            <h4>Avg. Response Time</h4>
-            <span class="stat-number">14m</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon bg-yellow"><i class="fas fa-users-cog"></i></div>
-          <div class="stat-info">
-            <h4>Responders Deployed</h4>
-            <span class="stat-number">1,240</span>
-          </div>
-        </div>
+        </ng-container>
 
       </div>
-
-      <div class="charts-placeholder">
-        <div class="chart-box">
-          <h3>Alert Frequency by Region</h3>
-          <div class="mock-bar-chart">
-            <div class="bar" style="height: 80%"><span>Mumbai</span></div>
-            <div class="bar" style="height: 40%"><span>Pune</span></div>
-            <div class="bar" style="height: 60%"><span>Delhi</span></div>
-            <div class="bar" style="height: 90%"><span>Chennai</span></div>
-            <div class="bar" style="height: 30%"><span>Kochi</span></div>
-          </div>
-        </div>
-
-        <div class="chart-box">
-          <h3>Responder Activity Levels</h3>
-          <div class="mock-line-chart">
-            <i class="fas fa-chart-area line-icon text-success"></i>
-            <p>Up 24% this month</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
+    </main>
   </div>
-
 </div>
 
 <footer class="footer">

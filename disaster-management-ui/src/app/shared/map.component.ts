@@ -2,21 +2,15 @@ import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild, Afte
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 
-// Fix leaflet default marker icon issue in angular
-const iconRetinaUrl = 'assets/marker-icon-2x.png';
-const iconUrl = 'assets/marker-icon.png';
-const shadowUrl = 'assets/marker-shadow.png';
-const iconDefault = L.icon({
-    iconRetinaUrl,
-    iconUrl,
-    shadowUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    tooltipAnchor: [16, -28],
-    shadowSize: [41, 41]
+// Fix leaflet default marker icon issue in angular by using a custom div marker
+const customMarkerIcon = L.divIcon({
+  className: 'custom-leaflet-marker',
+  html: `<div style="background-color: #E03131; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+  popupAnchor: [0, -9]
 });
-L.Marker.prototype.options.icon = iconDefault;
+L.Marker.prototype.options.icon = customMarkerIcon;
 
 @Component({
     selector: 'app-map',

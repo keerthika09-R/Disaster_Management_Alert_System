@@ -24,12 +24,31 @@ public class DisasterEvent {
     private Double latitude;
     private Double longitude;
 
+    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+    private java.time.LocalDateTime resolvedAt;
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.time.LocalDateTime getResolvedAt() {
+        return resolvedAt;
+    }
+
+    public void setResolvedAt(java.time.LocalDateTime resolvedAt) {
+        this.resolvedAt = resolvedAt;
     }
 
     public String getLocation() {

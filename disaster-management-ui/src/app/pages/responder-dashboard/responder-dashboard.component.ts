@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
@@ -15,12 +15,15 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './responder-dashboard.component.html',
   styleUrls: ['./responder-dashboard.component.css']
 })
-export class ResponderDashboardComponent implements OnInit {
+export class ResponderDashboardComponent implements OnInit, OnDestroy {
 
   assignedTasks: any[] = [];
   completedTasks: any[] = [];
   responderId: number | null = null;
   reportModel: any = {};
+  
+  activeTab: string = 'active';
+  pollingInterval: any;
 
   constructor(
     private rescueTaskService: RescueTaskService,
@@ -32,6 +35,16 @@ export class ResponderDashboardComponent implements OnInit {
   ngOnInit() {
     this.responderId = this.tokenService.getUserId();
     this.loadTasks();
+
+    this.pollingInterval = setInterval(() => {
+      this.loadTasks();
+    }, 10000);
+  }
+
+  ngOnDestroy() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 
   loadTasks() {
