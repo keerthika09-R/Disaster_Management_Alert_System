@@ -1,67 +1,54 @@
-/* You can add global styles to this file, and also import other style files */
-
-
+/* Global theme */
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  background-color: var(--light-green);
+  background: var(--bg-app);
+  color: var(--text-main);
 }
 
 :root {
-
---primary: #7ED9A3;
---primary-dark: #4CAF82;
-
---bg-app: #F4FBF7;
-
---bg-card: #FFFFFF;
-
---border: #E3F2E8;
-
---text-main: #1F2937;
-
---text-muted: #6B7280;
-
---success: #22C55E;
-
---danger: #EF4444;
-
+  --primary: #ff7a2f;
+  --primary-dark: #e5661e;
+  --primary-soft: #fff1e7;
+  --bg-app: #f5f1eb;
+  --bg-card: #ffffff;
+  --bg-card-muted: #f8f3ee;
+  --border: #e6ddd3;
+  --border-strong: #d6c8ba;
+  --text-main: #1a1a1a;
+  --text-soft: #403933;
+  --text-muted: #6f6963;
+  --heading: #171717;
+  --surface-dark: #121212;
+  --surface-dark-2: #1e1e2f;
+  --surface-dark-3: #2b2b36;
+  --white: #ffffff;
+  --danger: #b94c1c;
+  --danger-soft: #fff0ea;
+  --shadow-sm: 0 8px 24px rgba(25, 18, 12, 0.08);
+  --shadow-md: 0 14px 32px rgba(25, 18, 12, 0.12);
 }
 
-.card{
-
-background: var(--bg-card);
-
-border:1px solid var(--border);
-
-border-radius:12px;
-
-padding:24px;
-
-box-shadow:0 4px 12px rgba(0,0,0,0.05);
-
+* {
+  box-sizing: border-box;
 }
 
-.sidebar{
-
-background:linear-gradient(
-180deg,
-#A8E6CF,
-#7ED9A3
-);
-
-color:white;
-
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-primary{
+.sidebar {
+  background: var(--bg-card-muted);
+  color: var(--text-main);
+}
 
-background:#7ED9A3;
-
-border:none;
-
-color:white;
-
-font-weight:600;
-
+.btn-primary {
+  background: var(--primary);
+  border: none;
+  color: var(--white);
+  font-weight: 600;
 }
