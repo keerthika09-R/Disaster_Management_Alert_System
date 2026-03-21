@@ -70,6 +70,33 @@
               </div>
             </ng-template>
           </div>
+
+          <!-- Emergency Rescue Requests Section -->
+          <div class="dashboard-section Glass-Panel" style="grid-column: span 2; margin-top: 20px;">
+            <h2><i class="fas fa-life-ring text-danger"></i> Emergency Rescue Requests</h2>
+            <p class="section-desc">Direct requests from citizens for emergency rescue.</p>
+
+            <div class="alert-list" *ngIf="helpRequests.length > 0; else noRescueRequests">
+              <div class="alert-card animate-pop" *ngFor="let req of helpRequests">
+                <div class="card-header">
+                  <span class="badge badge-critical">Emergency</span>
+                  <span class="severity">{{ req.status }}</span>
+                </div>
+                <div class="card-body">
+                  <h3>{{ req.location }}</h3>
+                  <p>{{ req.description }}</p>
+                  <p><small><i class="fas fa-user"></i> Citizen: {{ req.citizenEmail }}</small></p>
+                  <p *ngIf="req.assignedResponderEmail"><small><i class="fas fa-helmet-safety"></i> Responder: {{ req.assignedResponderEmail }}</small></p>
+                </div>
+              </div>
+            </div>
+            <ng-template #noRescueRequests>
+              <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No citizen rescue requests active.</p>
+              </div>
+            </ng-template>
+          </div>
         </ng-container>
 
         <!-- Verified Disasters Section -->
@@ -109,7 +136,8 @@
                         <i class="fas fa-file-medical-alt"></i> Latest situational report
                       </div>
                       <p>{{ disaster.latestReport.reportText }}</p>
-                      <small>
+                      <img *ngIf="disaster.latestReport.imageUrl" [src]="disaster.latestReport.imageUrl" alt="Incident Report Image" style="max-width: 100%; border-radius: 8px; margin-top: 10px; max-height: 200px; object-fit: cover;" />
+                      <small style="display: block; margin-top: 10px;">
                         {{ disaster.reportCount }} report{{ disaster.reportCount === 1 ? '' : 's' }} received
                         • {{ disaster.latestReport.timestamp | date:'medium' }}
                       </small>
@@ -233,6 +261,7 @@
                         <i class="fas fa-file-medical-alt"></i> Final update
                       </div>
                       <p>{{ disaster.latestReport.reportText }}</p>
+                      <img *ngIf="disaster.latestReport.imageUrl" [src]="disaster.latestReport.imageUrl" alt="Incident Report Image" style="max-width: 100%; border-radius: 8px; margin-top: 10px; max-height: 150px; object-fit: cover;" />
                     </div>
                   </div>
                 </div>

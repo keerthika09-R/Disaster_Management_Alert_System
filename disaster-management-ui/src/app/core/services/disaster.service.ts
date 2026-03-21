@@ -53,4 +53,16 @@ export class DisasterService {
   submitHelpRequest(data: any) {
     return this.http.post('http://localhost:8082/api/help-requests/submit', data);
   }
+
+  getAllHelpRequests() {
+    return this.http.get<any[]>('http://localhost:8082/api/help-requests/all');
+  }
+
+  getHelpRequestsByResponder(email: string) {
+    return this.http.get<any[]>(`http://localhost:8082/api/help-requests/responder/${email}`);
+  }
+
+  updateHelpRequestStatus(id: number, status: string) {
+    return this.http.put(`http://localhost:8082/api/help-requests/${id}/status?status=${status}`, {});
+  }
 }

@@ -33,6 +33,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   resolvedDisasters: any[] = [];
   allTasks: any[] = [];
   allReports: any[] = [];
+  helpRequests: any[] = [];
   isSyncing = false;
 
   analyticsData: AnalyticsData | null = null;
@@ -86,6 +87,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.disasterService.getPending().subscribe((res: any) => this.pendingDisasters = res);
     this.disasterService.getVerified().subscribe((res: any) => this.verifiedDisasters = this.decorateDisasters(res));
     this.disasterService.getResolved().subscribe((res: any) => this.resolvedDisasters = this.decorateDisasters(res));
+    this.disasterService.getAllHelpRequests().subscribe((res: any) => this.helpRequests = res);
   }
 
   loadOperationalData() {

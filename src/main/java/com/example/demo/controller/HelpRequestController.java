@@ -13,6 +13,7 @@ import com.example.demo.Entity.User;
 
 @RestController
 @RequestMapping("/api/help-requests")
+@CrossOrigin(origins = "http://localhost:4200")
 public class HelpRequestController {
 
     @Autowired
@@ -41,5 +42,18 @@ public class HelpRequestController {
     public ResponseEntity<List<HelpRequest>> getAssignedRequests(@PathVariable String email) {
         List<HelpRequest> requests = helpRequestRepository.findByAssignedResponderEmail(email);
         return ResponseEntity.ok(requests);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<HelpRequest>> getAllRequests() {
+        return ResponseEntity.ok(helpRequestRepository.findAll());
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<HelpRequest> updateStatus(@PathVariable Long id, @RequestParam String status) {
+        return helpRequestRepository.findById(id).map(request -> {
+            request.setStatus(status);
+            return ResponseEntity.ok(helpRequestRepository.save(request));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

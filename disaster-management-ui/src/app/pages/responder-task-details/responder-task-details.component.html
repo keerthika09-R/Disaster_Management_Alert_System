@@ -65,9 +65,6 @@
                 <button class="btn-primary" *ngIf="task.status === 'PENDING'" (click)="updateStatus('IN_PROGRESS')">
                     <i class="fas fa-play"></i> Start Mission
                 </button>
-                <button class="btn-success" *ngIf="task.status === 'IN_PROGRESS'" (click)="updateStatus('COMPLETED')">
-                    <i class="fas fa-check-double"></i> Complete Mission
-                </button>
             </div>
         </div>
 
@@ -84,13 +81,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Image Evidence URL (Optional)</label>
+                    <label>Image Evidence URL (Required to complete)</label>
                     <input type="text" [(ngModel)]="reportObj.imageUrl" name="imageUrl"
-                        placeholder="https://example.com/damage.jpg" />
+                        placeholder="https://example.com/damage.jpg" required />
                 </div>
 
-                <button type="submit" class="btn-info">
-                    <i class="fas fa-paper-plane"></i> Transmit Report
+                <button type="submit" class="btn-success">
+                    <i class="fas fa-check-double"></i> Submit & Complete Mission
                 </button>
             </form>
         </div>

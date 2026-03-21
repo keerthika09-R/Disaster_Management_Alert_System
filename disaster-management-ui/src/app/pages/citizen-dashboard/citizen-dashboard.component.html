@@ -33,11 +33,11 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Location Details</label>
-          <input type="text" placeholder="Enter exact address or landmark...">
+          <input type="text" [(ngModel)]="rescueModel.location" placeholder="Enter exact address or landmark...">
         </div>
         <div class="form-group">
           <label>Emergency Type</label>
-          <select>
+          <select [(ngModel)]="rescueModel.type">
             <option>Trapped in Flood</option>
             <option>Fire Hazard</option>
             <option>Medical Emergency</option>
@@ -46,7 +46,7 @@
         </div>
         <div class="form-group">
           <label>Number of People</label>
-          <input type="number" min="1" value="1">
+          <input type="number" [(ngModel)]="rescueModel.people" min="1">
         </div>
         <button class="btn-submit-danger" (click)="submitRescueRequest()">
           Submit Immediate Request

@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
+import { TokenService } from '../../core/services/token.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-citizen-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, FormsModule],
   templateUrl: './citizen-dashboard.component.html',
   styleUrls: ['./citizen-dashboard.component.css']
 })
@@ -15,8 +17,17 @@ export class CitizenDashboardComponent implements OnInit {
   activeAlerts: any[] = [];
   showRescueForm = false;
   showToast = false;
+  
+  rescueModel = {
+    location: '',
+    type: 'Trapped in Flood',
+    people: 1
+  };
 
-  constructor(private disasterService: DisasterService) { }
+  constructor(
+    private disasterService: DisasterService,
+    private tokenService: TokenService
+  ) { }
 
   ngOnInit() {
     this.loadAlerts();
@@ -43,11 +54,15 @@ export class CitizenDashboardComponent implements OnInit {
   }
 
   submitRescueRequest() {
-    // In a complete app, we'd grab values from a form. Sending a dummy for demo.
+    if (!this.rescueModel.location) {
+      alert("Please provide your location details.");
+      return;
+    }
+    
     const requestData = {
-      citizenEmail: 'citizen@example.com',
-      location: 'Current GPS Location',
-      description: 'Emergency Rescue Needed!'
+      citizenEmail: this.tokenService.getEmail() || 'anonymous@citizen.com',
+      location: this.rescueModel.location,
+      description: `Emergency Type: ${this.rescueModel.type}. People affected: ${this.rescueModel.people}.`
     };
 
     this.disasterService.submitHelpRequest(requestData).subscribe({

@@ -51,6 +51,11 @@ export class ResponderTaskDetailsComponent implements OnInit {
 
   updateStatus(status: string) {
     if (!this.task) return;
+    
+    // If attempting to complete, force a report submission if not already done,
+    // or we can just block them and tell them to use the "Transmit Report" form. 
+    // Wait, let's just use the submitReport method to complete it.
+    
     this.rescueTaskService.updateTaskStatus(this.task.id, status).subscribe({
       next: () => {
         alert('Status updated successfully!');
@@ -65,15 +70,22 @@ export class ResponderTaskDetailsComponent implements OnInit {
       alert('Report text is required');
       return;
     }
+    if (!this.reportObj.imageUrl) {
+      alert('Image evidence is required to complete the mission');
+      return;
+    }
+    
     const reportData = {
       rescueTaskId: this.task.id,
       reportText: this.reportObj.text,
-      imageUrl: this.reportObj.imageUrl || ''
+      imageUrl: this.reportObj.imageUrl
     };
     this.incidentReportService.submitReport(reportData).subscribe({
       next: () => {
         alert('Incident report submitted successfully');
         this.reportObj = { text: '', imageUrl: '' };
+        // Now automatically complete the mission
+        this.updateStatus('COMPLETED');
       },
       error: () => alert('Failed to submit report')
     });

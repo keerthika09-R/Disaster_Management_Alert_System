@@ -19,7 +19,9 @@ export class ResponderDashboardComponent implements OnInit, OnDestroy {
 
   assignedTasks: any[] = [];
   completedTasks: any[] = [];
+  assignedEmergencyRescues: any[] = [];
   responderId: number | null = null;
+  responderEmail: string | null = null;
   reportModel: any = {};
   
   activeTab: string = 'active';
@@ -35,6 +37,7 @@ export class ResponderDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.responderId = this.tokenService.getUserId();
+    this.responderEmail = this.tokenService.getEmail();
     this.route.queryParamMap.subscribe(params => {
       const tab = params.get('tab');
       this.activeTab = tab === 'history' ? 'history' : 'active';
@@ -59,10 +62,28 @@ export class ResponderDashboardComponent implements OnInit, OnDestroy {
         this.completedTasks = res.filter((task: any) => task.status === 'COMPLETED');
       });
     }
+    if (this.responderEmail) {
+      this.disasterService.getHelpRequestsByResponder(this.responderEmail).subscribe((res: any) => {
+        this.assignedEmergencyRescues = res.filter((req: any) => req.status !== 'RESOLVED' && req.status !== 'COMPLETED');
+      });
+    }
   }
 
   viewDetails(taskId: number) {
     this.router.navigate(['/responder/task', taskId]);
+  }
+
+  resolveRescueRequest(reqId: number) {
+    this.disasterService.updateHelpRequestStatus(reqId, 'RESOLVED').subscribe({
+      next: () => {
+        alert('Emergency Rescue Request marked as RESOLVED!');
+        this.loadTasks(); // refresh lists
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Failed to resolve rescue request.');
+      }
+    });
   }
 
   goToApprovedDisasters() {

@@ -8,6 +8,15 @@ export class TokenService {
   private TOKEN_KEY = 'auth_token';
   private ROLE_KEY = 'user_role';
   private ID_KEY = 'user_id';
+  private EMAIL_KEY = 'user_email';
+
+  saveEmail(email: string) {
+    localStorage.setItem(this.EMAIL_KEY, email);
+  }
+
+  getEmail(): string | null {
+    return localStorage.getItem(this.EMAIL_KEY);
+  }
 
   saveToken(token: string) {
     localStorage.setItem(this.TOKEN_KEY, token);

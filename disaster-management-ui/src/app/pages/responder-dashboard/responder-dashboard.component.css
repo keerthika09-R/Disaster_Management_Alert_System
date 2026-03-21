@@ -193,6 +193,27 @@
   background: var(--primary-dark);
 }
 
+.btn-success {
+  background: #2aa15c;
+  border: none;
+  color: var(--white);
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 12px 20px rgba(42, 161, 92, 0.18);
+}
+
+.btn-success:hover {
+  background: #1e8549;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(42, 161, 92, 0.25);
+}
+
 .empty-state {
   text-align: center;
   padding: 50px 20px;
