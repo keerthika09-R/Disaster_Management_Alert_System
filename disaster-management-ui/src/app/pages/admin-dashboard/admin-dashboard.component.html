@@ -19,6 +19,9 @@
         <button (click)="activeTab = 'pending'" [class.active]="activeTab === 'pending'">
           <i class="fas fa-exclamation-circle"></i> Pending Alerts
         </button>
+        <button (click)="activeTab = 'rescues'" [class.active]="activeTab === 'rescues'">
+          <i class="fas fa-life-ring"></i> Emergency Rescues
+        </button>
         <button (click)="activeTab = 'live'" [class.active]="activeTab === 'live'">
           <i class="fas fa-satellite-dish"></i> Live Events
         </button>
@@ -71,29 +74,54 @@
             </ng-template>
           </div>
 
-          <!-- Emergency Rescue Requests Section -->
-          <div class="dashboard-section Glass-Panel" style="grid-column: span 2; margin-top: 20px;">
-            <h2><i class="fas fa-life-ring text-danger"></i> Emergency Rescue Requests</h2>
-            <p class="section-desc">Direct requests from citizens for emergency rescue.</p>
+        </ng-container>
+
+        <!-- Emergency Rescue Requests Section -->
+        <ng-container *ngIf="activeTab === 'rescues'">
+          <div class="dashboard-section Glass-Panel" style="grid-column: span 2;">
+            <h2><i class="fas fa-life-ring text-danger"></i> Citizen Emergency Rescue Requests</h2>
+            <p class="section-desc">Direct requests from citizens for emergency rescue requiring responder assignment.</p>
 
             <div class="alert-list" *ngIf="helpRequests.length > 0; else noRescueRequests">
               <div class="alert-card animate-pop" *ngFor="let req of helpRequests">
                 <div class="card-header">
                   <span class="badge badge-critical">Emergency</span>
-                  <span class="severity">{{ req.status }}</span>
+                  <span class="status-badge urgent">{{ req.status }}</span>
                 </div>
                 <div class="card-body">
                   <h3>{{ req.location }}</h3>
                   <p>{{ req.description }}</p>
-                  <p><small><i class="fas fa-user"></i> Citizen: {{ req.citizenEmail }}</small></p>
-                  <p *ngIf="req.assignedResponderEmail"><small><i class="fas fa-helmet-safety"></i> Responder: {{ req.assignedResponderEmail }}</small></p>
+                  <p style="margin-top: 10px; color: #555;"><small><i class="fas fa-user"></i> Citizen: {{ req.citizenEmail }}</small></p>
+                  <p *ngIf="req.assignedResponderEmail" style="color: #555;"><small><i class="fas fa-helmet-safety"></i> Responder: {{ req.assignedResponderEmail }}</small></p>
                 </div>
+                <div class="card-footer" *ngIf="req.status === 'PENDING'" style="flex-direction: column; gap: 10px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 0 0 14px 14px; margin: -20px; margin-top: 15px; border-top: 1px solid var(--border);">
+                  <select [(ngModel)]="req.selectedResponder"
+                    style="width: 100%; padding: 14px 15px; border-radius: 10px; background: white; border: 1px solid #ced4da; color: #333; margin-bottom: 15px; font-size: 1.05rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; height: auto;">
+                    <option [value]="undefined" disabled selected>-- Select a Responder to Assign --</option>
+                    <option *ngFor="let responder of responders" [value]="responder.email">{{ responder.fullName }} ({{responder.email}})</option>
+                  </select>
+                  <button class="btn-primary" (click)="assignHelpRequest(req.id, req.selectedResponder)" style="width: 100%; padding: 14px 15px; font-size: 1.05rem; border-radius: 10px; justify-content: center; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="fas fa-user-plus"></i> Assign to Responder
+                  </button>
+                </div>
+                
+                <div class="card-footer" *ngIf="req.status === 'PENDING_VERIFICATION'" style="flex-direction: column; gap: 10px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 0 0 14px 14px; margin: -20px; margin-top: 15px; border-top: 1px solid var(--border);">
+                  <h4 style="color: #28a745; margin: 0; font-size: 1.1rem;"><i class="fas fa-clipboard-check"></i> Rescue Report Submitted</h4>
+                  <p style="margin: 0; color: #444; font-size: 0.95rem;"><strong>Report:</strong> {{ req.reportText }}</p>
+                  <div *ngIf="req.reportImageUrl" style="margin-top: 5px;">
+                    <img [src]="req.reportImageUrl" style="max-width: 100%; border-radius: 8px; border: 1px solid #ddd;" alt="Rescue Proof">
+                  </div>
+                  <button class="btn btn-success" (click)="verifyHelpRequest(req.id)" style="width: 100%; justify-content: center; margin-top: 10px; background: #2aa15c; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-check-double"></i> Verify and Mark Resolved
+                  </button>
+                </div>
+
               </div>
             </div>
             <ng-template #noRescueRequests>
               <div class="empty-state">
-                <i class="fas fa-check-circle"></i>
-                <p>No citizen rescue requests active.</p>
+                <i class="fas fa-check-circle" style="color: #2aa15c;"></i>
+                <p>No unhandled citizen rescue requests pending.</p>
               </div>
             </ng-template>
           </div>

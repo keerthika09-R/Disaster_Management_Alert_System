@@ -4,14 +4,14 @@ import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
 
 import { RescueTaskService } from '../../core/services/rescue-task.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TokenService } from '../../core/services/token.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-responder-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FormsModule],
+  imports: [CommonModule, NavbarComponent, FormsModule, RouterModule],
   templateUrl: './responder-dashboard.component.html',
   styleUrls: ['./responder-dashboard.component.css']
 })

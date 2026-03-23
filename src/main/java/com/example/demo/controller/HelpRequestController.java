@@ -25,23 +25,10 @@ public class HelpRequestController {
     @PostMapping("/submit")
     public ResponseEntity<HelpRequest> submitRequest(@RequestBody HelpRequest request) {
         request.setStatus("PENDING");
-
-        // Basic routing: find all responders and assign to the first one available
-        // In a real application, this would calculate nearest geolocation
-        List<User> responders = userRepository.findByRole("RESPONDER");
-        if (responders != null && !responders.isEmpty()) {
-            request.setAssignedResponderEmail(responders.get(0).getEmail());
-            request.setStatus("ASSIGNED");
-        }
+        request.setAssignedResponderEmail(null);
 
         HelpRequest saved = helpRequestRepository.save(request);
         return ResponseEntity.ok(saved);
-    }
-
-    @GetMapping("/responder/{email}")
-    public ResponseEntity<List<HelpRequest>> getAssignedRequests(@PathVariable String email) {
-        List<HelpRequest> requests = helpRequestRepository.findByAssignedResponderEmail(email);
-        return ResponseEntity.ok(requests);
     }
 
     @GetMapping("/all")
@@ -49,10 +36,44 @@ public class HelpRequestController {
         return ResponseEntity.ok(helpRequestRepository.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HelpRequest> getRequestById(@PathVariable Long id) {
+        return helpRequestRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/responder/{email}")
+    public ResponseEntity<List<HelpRequest>> getRequestsByResponder(@PathVariable String email) {
+        return ResponseEntity.ok(helpRequestRepository.findByAssignedResponderEmail(email));
+    }
+
+    @PutMapping("/{id}/assign")
+    public ResponseEntity<HelpRequest> assignRequest(@PathVariable Long id, @RequestParam String responderEmail) {
+        return helpRequestRepository.findById(id).map(request -> {
+            request.setAssignedResponderEmail(responderEmail);
+            request.setStatus("ASSIGNED");
+            return ResponseEntity.ok(helpRequestRepository.save(request));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<HelpRequest> updateStatus(@PathVariable Long id, @RequestParam String status) {
         return helpRequestRepository.findById(id).map(request -> {
             request.setStatus(status);
+            return ResponseEntity.ok(helpRequestRepository.save(request));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/report")
+    public ResponseEntity<HelpRequest> submitReport(
+            @PathVariable Long id, 
+            @RequestParam String reportText, 
+            @RequestParam(required = false) String reportImageUrl) {
+        return helpRequestRepository.findById(id).map(request -> {
+            request.setReportText(reportText);
+            request.setReportImageUrl(reportImageUrl);
+            request.setStatus("PENDING_VERIFICATION");
             return ResponseEntity.ok(helpRequestRepository.save(request));
         }).orElse(ResponseEntity.notFound().build());
     }

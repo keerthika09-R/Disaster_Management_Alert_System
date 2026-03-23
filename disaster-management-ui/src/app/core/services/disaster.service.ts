@@ -55,7 +55,11 @@ export class DisasterService {
   }
 
   getAllHelpRequests() {
-    return this.http.get<any[]>('http://localhost:8082/api/help-requests/all');
+    return this.http.get<any[]>(`http://localhost:8082/api/help-requests/all`);
+  }
+
+  getHelpRequestById(id: number) {
+    return this.http.get<any>(`http://localhost:8082/api/help-requests/${id}`);
   }
 
   getHelpRequestsByResponder(email: string) {
@@ -64,5 +68,17 @@ export class DisasterService {
 
   updateHelpRequestStatus(id: number, status: string) {
     return this.http.put(`http://localhost:8082/api/help-requests/${id}/status?status=${status}`, {});
+  }
+
+  assignHelpRequest(id: number, responderEmail: string) {
+    return this.http.put(`http://localhost:8082/api/help-requests/${id}/assign?responderEmail=${responderEmail}`, {});
+  }
+
+  submitHelpRequestReport(id: number, reportText: string, reportImageUrl: string | null) {
+    let url = `http://localhost:8082/api/help-requests/${id}/report?reportText=${encodeURIComponent(reportText)}`;
+    if (reportImageUrl) {
+      url += `&reportImageUrl=${encodeURIComponent(reportImageUrl)}`;
+    }
+    return this.http.put(url, {});
   }
 }

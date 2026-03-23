@@ -9,6 +9,7 @@ import { ResponderDashboardComponent } from './pages/responder-dashboard/respond
 import { ResponderApprovedDisastersComponent } from './pages/responder-approved-disasters/responder-approved-disasters.component';
 import { ResponderTaskDetailsComponent } from './pages/responder-task-details/responder-task-details.component';
 import { CitizenDashboardComponent } from './pages/citizen-dashboard/citizen-dashboard.component';
+import { ResponderRescueDetailComponent } from './pages/responder-rescue-detail/responder-rescue-detail.component';
 
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
@@ -48,6 +49,13 @@ export const routes: Routes = [
   {
     path: 'responder/task/:id',
     component: ResponderTaskDetailsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: 'RESPONDER' }
+  },
+
+  {
+    path: 'responder/rescue/:id',
+    component: ResponderRescueDetailComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { role: 'RESPONDER' }
   },

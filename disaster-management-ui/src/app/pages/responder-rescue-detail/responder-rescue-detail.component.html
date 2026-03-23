@@ -1,0 +1,87 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-wrapper">
+  <div class="content-container" *ngIf="helpRequest; else loading">
+    
+    <div class="dashboard-header mb-4">
+      <button class="btn btn-outline-secondary mb-3 back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+      <div class="header-titles">
+        <h1>Citizen Rescue Request Detail</h1>
+        <p class="text-muted">View rescue details and submit an incident report upon completion.</p>
+      </div>
+    </div>
+    
+    <!-- Details Card -->
+    <div class="info-card Glass-Panel mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-info-circle text-primary"></i> Request Information</h2>
+        <span class="badge" 
+              [ngClass]="{'badge-pending': helpRequest.status === 'PENDING', 
+                          'badge-assigned': helpRequest.status === 'ASSIGNED', 
+                          'badge-resolved': helpRequest.status === 'RESOLVED',
+                          'badge-verification': helpRequest.status === 'PENDING_VERIFICATION'}">
+          {{ helpRequest.status }}
+        </span>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Location:</strong>
+          <p>{{ helpRequest.location }}</p>
+        </div>
+        <div class="info-item">
+          <strong>Reporter Email:</strong>
+          <p>{{ helpRequest.citizenEmail }}</p>
+        </div>
+        <div class="info-item">
+          <strong>Description:</strong>
+          <p>{{ helpRequest.description }}</p>
+        </div>
+        <div class="info-item">
+          <strong>Reported At:</strong>
+          <p>{{ helpRequest.createdAt | date:'medium' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reporting Form -->
+    <div class="report-card Glass-Panel" *ngIf="helpRequest.status === 'ASSIGNED'">
+      <h2 class="mb-3"><i class="fas fa-clipboard-check text-success"></i> Submit Completion Report</h2>
+      
+      <div class="form-group mb-3">
+        <label class="form-label">Report Description *</label>
+        <textarea class="form-control" [(ngModel)]="reportText" rows="4" placeholder="Detail the rescue operations performed..."></textarea>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label">Proof / Image URL (Optional)</label>
+        <input type="text" class="form-control" [(ngModel)]="reportImageUrl" placeholder="https://example.com/image.jpg">
+      </div>
+
+      <button class="btn btn-primary w-100 mt-2" style="font-size: 1.1rem; padding: 12px;" (click)="submitReport()">
+        <i class="fas fa-check-circle"></i> Submit Report & Mark for Verification
+      </button>
+    </div>
+
+    <!-- View Existing Report (If already submitted) -->
+    <div class="report-card Glass-Panel" *ngIf="helpRequest.status !== 'ASSIGNED' && helpRequest.status !== 'PENDING'">
+      <h2 class="mb-3"><i class="fas fa-clipboard-list text-primary"></i> Submitted Report</h2>
+      <p><strong>Description:</strong> {{ helpRequest.reportText || 'No description provided.' }}</p>
+      
+      <div *ngIf="helpRequest.reportImageUrl" class="mt-3">
+        <strong>Attached Image:</strong><br>
+        <img [src]="helpRequest.reportImageUrl" alt="Report Image" class="report-img mt-2">
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <div class="text-center mt-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  </ng-template>
+</div>

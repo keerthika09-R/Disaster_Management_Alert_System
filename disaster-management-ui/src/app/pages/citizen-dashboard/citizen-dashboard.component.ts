@@ -15,8 +15,8 @@ import { FormsModule } from '@angular/forms';
 export class CitizenDashboardComponent implements OnInit {
 
   activeAlerts: any[] = [];
-  showRescueForm = false;
   showToast = false;
+  activeTab = 'alerts';
   
   rescueModel = {
     location: '',
@@ -49,10 +49,6 @@ export class CitizenDashboardComponent implements OnInit {
     }, 5000);
   }
 
-  toggleRescueForm() {
-    this.showRescueForm = !this.showRescueForm;
-  }
-
   submitRescueRequest() {
     if (!this.rescueModel.location) {
       alert("Please provide your location details.");
@@ -67,8 +63,9 @@ export class CitizenDashboardComponent implements OnInit {
 
     this.disasterService.submitHelpRequest(requestData).subscribe({
       next: (res) => {
-        alert("Emergency Rescue Request Submitted Successfully! A responder has been assigned.");
-        this.showRescueForm = false;
+        alert("Emergency Rescue Request Submitted Successfully! Authorities are reviewing it for assignment.");
+        this.rescueModel.location = '';
+        this.rescueModel.people = 1;
       },
       error: (err) => {
         console.error("Failed to submit request", err);

@@ -4,10 +4,10 @@ import { NavbarComponent } from '../../shared/navbar.component';
 import { DisasterService } from '../../core/services/disaster.service';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { MapComponent } from '../../shared/map.component';
-import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RescueTaskService } from '../../core/services/rescue-task.service';
 import { IncidentReportService } from '../../core/services/incident-report.service';
+import { UserService } from '../../core/services/user.service'; // Added UserService
 
 export interface AnalyticsData {
   totalFloods: number;
@@ -32,15 +32,18 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   verifiedDisasters: any[] = [];
   resolvedDisasters: any[] = [];
   allTasks: any[] = [];
-  allReports: any[] = [];
   helpRequests: any[] = [];
+  responders: any[] = []; // Moved and kept
+  allReports: any[] = []; // Kept from original
+
+  showAssignModal = false; // Added
+  selectedDisaster: any = null; // Added
   isSyncing = false;
 
   analyticsData: AnalyticsData | null = null;
   pollingInterval: any;
   activeTab: string = 'pending';
 
-  responders: any[] = [];
   assignModel = {
     disasterEventId: '',
     responderId: '',
@@ -49,25 +52,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private disasterService: DisasterService,
-    private http: HttpClient,
     private rescueTaskService: RescueTaskService,
     private analyticsService: AnalyticsService,
-    private incidentReportService: IncidentReportService
+    private incidentReportService: IncidentReportService,
+    private userService: UserService // Changed from http to userService
   ) { }
 
   ngOnInit() {
-    this.loadDisasters();
+    this.startPolling(); // New method to encapsulate polling logic
+    this.loadAnalytics(); // Fixed method name
     this.loadResponders();
-    this.loadOperationalData();
-    this.loadAnalytics();
-    
-    // Pseudo real-time updates every 10 seconds for all views
-    this.pollingInterval = setInterval(() => {
-      this.loadDisasters();
-      this.loadResponders();
-      this.loadOperationalData();
-      this.loadAnalytics();
-    }, 10000);
   }
 
   ngOnDestroy() {
@@ -75,6 +69,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       clearInterval(this.pollingInterval);
     }
   }
+
+  // New method to start polling
+  startPolling() {
+    this.loadDisasters();
+    this.loadOperationalData();
+    this.loadAnalytics(); // Fixed method name
+
+    this.pollingInterval = setInterval(() => {
+      this.loadDisasters();
+      this.loadOperationalData();
+      this.loadAnalytics();
+    }, 10000);
+  }
+
+
 
   loadAnalytics() {
     this.analyticsService.getDashboardAnalytics().subscribe({
@@ -111,7 +120,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadResponders() {
-    this.http.get<any[]>('http://localhost:8082/api/users/responders').subscribe({
+    this.userService.getResponders().subscribe({
       next: (res) => this.responders = res,
       error: (err) => console.error('Failed to load responders', err)
     });
@@ -163,6 +172,33 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error(err);
         alert('Failed to assign task');
+      }
+    });
+  }
+
+  assignHelpRequest(reqId: number, responderEmail: string) {
+    if (!responderEmail) {
+      alert("Please select a responder first!");
+      return;
+    }
+    this.disasterService.assignHelpRequest(reqId, responderEmail).subscribe({
+      next: () => {
+        alert("Emergency Rescue Request Assigned Successfully!");
+        this.loadDisasters();
+      },
+      error: () => alert("Failed to assign request")
+    });
+  }
+
+  verifyHelpRequest(reqId: number) {
+    this.disasterService.updateHelpRequestStatus(reqId, 'RESOLVED').subscribe({
+      next: () => {
+        alert("Rescue request verified and resolved!");
+        this.loadDisasters();
+      },
+      error: (err) => {
+        console.error("Failed to verify request", err);
+        alert("Verification failed.");
       }
     });
   }

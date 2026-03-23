@@ -18,69 +18,82 @@
       <h1>Citizen Dashboard</h1>
       <p>Stay informed about real-time alerts in your region.</p>
     </div>
-    <button class="btn-danger" (click)="toggleRescueForm()">
-      <i class="fas fa-life-ring"></i> Request Emergency Rescue
-    </button>
   </div>
 
-  <!-- Rescue Request Form Modal -->
-  <div class="modal-overlay animate-fade" *ngIf="showRescueForm">
-    <div class="modal-card animate-pop">
-      <div class="modal-header">
-        <h2><i class="fas fa-ambulance text-danger"></i> Emergency Rescue Request</h2>
-        <button class="btn-close" (click)="toggleRescueForm()"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Location Details</label>
-          <input type="text" [(ngModel)]="rescueModel.location" placeholder="Enter exact address or landmark...">
-        </div>
-        <div class="form-group">
-          <label>Emergency Type</label>
-          <select [(ngModel)]="rescueModel.type">
-            <option>Trapped in Flood</option>
-            <option>Fire Hazard</option>
-            <option>Medical Emergency</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Number of People</label>
-          <input type="number" [(ngModel)]="rescueModel.people" min="1">
-        </div>
-        <button class="btn-submit-danger" (click)="submitRescueRequest()">
-          Submit Immediate Request
+  <div class="dashboard-layout">
+    <aside class="sidebar Glass-Panel">
+      <nav class="sidebar-nav">
+        <button (click)="activeTab = 'alerts'" [class.active]="activeTab === 'alerts'">
+          <i class="fas fa-broadcast-tower"></i> Live Alerts
         </button>
-      </div>
-    </div>
-  </div>
+        <button (click)="activeTab = 'rescue'" [class.active]="activeTab === 'rescue'">
+          <i class="fas fa-life-ring"></i> Request Rescue
+        </button>
+      </nav>
+    </aside>
 
-  <!-- Active Alerts List -->
-  <div class="dashboard-section Glass-Panel">
-    <h2><i class="fas fa-broadcast-tower text-primary"></i> Live Disaster Alerts</h2>
+    <main class="main-content">
+      
+      <!-- Live Alerts Tab -->
+      <ng-container *ngIf="activeTab === 'alerts'">
+        <div class="dashboard-section Glass-Panel">
+          <h2><i class="fas fa-broadcast-tower text-primary"></i> Live Disaster Alerts</h2>
 
-    <div class="alert-list" *ngIf="activeAlerts.length > 0; else noAlerts">
-      <div class="alert-card active-card animate-slide" *ngFor="let disaster of activeAlerts">
-        <div class="card-header">
-          <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType
-            }}</span>
-          <span class="severity">{{ disaster.severity || 'High' }}</span>
+          <div class="alert-list" *ngIf="activeAlerts.length > 0; else noAlerts">
+            <div class="alert-card active-card animate-slide" *ngFor="let disaster of activeAlerts">
+              <div class="card-header">
+                <span class="badge" [ngClass]="'badge-' + disaster?.disasterType?.toLowerCase()">{{ disaster?.disasterType }}</span>
+                <span class="severity">{{ disaster.severity || 'High' }}</span>
+              </div>
+              <div class="card-body">
+                <h3>{{ disaster.location }}</h3>
+                <p>{{ disaster.description }}</p>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noAlerts>
+            <div class="empty-state">
+              <i class="fas fa-shield-heart text-success"></i>
+              <p>No active disaster alerts in your region. You are safe!</p>
+            </div>
+          </ng-template>
         </div>
-        <div class="card-body">
-          <h3>{{ disaster.location }}</h3>
-          <p>{{ disaster.description }}</p>
+      </ng-container>
+
+      <!-- Request Rescue Tab -->
+      <ng-container *ngIf="activeTab === 'rescue'">
+        <div class="dashboard-section Glass-Panel">
+          <h2><i class="fas fa-ambulance text-danger"></i> Emergency Rescue Request</h2>
+          <p class="section-desc" style="margin-bottom: 25px;">Submit a request for emergency extraction. Authorities will review and assign a responder as soon as possible.</p>
+          
+          <div class="form-container" style="max-width: 600px;">
+            <div class="form-group">
+              <label>Location Details</label>
+              <input type="text" [(ngModel)]="rescueModel.location" placeholder="Enter exact address or landmark...">
+            </div>
+            <div class="form-group">
+              <label>Emergency Type</label>
+              <select [(ngModel)]="rescueModel.type">
+                <option>Trapped in Flood</option>
+                <option>Fire Hazard</option>
+                <option>Medical Emergency</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Number of People</label>
+              <input type="number" [(ngModel)]="rescueModel.people" min="1">
+            </div>
+            <button class="btn-submit-danger" style="margin-top: 20px;" (click)="submitRescueRequest()">
+              Submit Immediate Request <i class="fas fa-paper-plane" style="margin-left: 8px;"></i>
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+      </ng-container>
 
-    <ng-template #noAlerts>
-      <div class="empty-state">
-        <i class="fas fa-shield-heart text-success"></i>
-        <p>No active disaster alerts in your region. You are safe!</p>
-      </div>
-    </ng-template>
+    </main>
   </div>
-
 </div>
 
 <footer class="footer">

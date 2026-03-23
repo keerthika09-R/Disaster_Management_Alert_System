@@ -22,6 +22,11 @@ public class HelpRequest {
 
     private String assignedResponderEmail;
 
+    @Column(length = 1000)
+    private String reportText;
+
+    private String reportImageUrl;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Long getId() {
@@ -78,5 +83,21 @@ public class HelpRequest {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getReportText() {
+        return reportText;
+    }
+
+    public void setReportText(String reportText) {
+        this.reportText = reportText;
+    }
+
+    public String getReportImageUrl() {
+        return reportImageUrl;
+    }
+
+    public void setReportImageUrl(String reportImageUrl) {
+        this.reportImageUrl = reportImageUrl;
     }
 }

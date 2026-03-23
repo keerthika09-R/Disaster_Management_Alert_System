@@ -24,6 +24,70 @@
   color: var(--text-muted);
 }
 
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  padding: 24px;
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-nav button {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.sidebar-nav button i {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.sidebar-nav button:hover {
+  background: var(--surface-hover);
+  color: var(--primary);
+  transform: translateX(5px);
+}
+
+.sidebar-nav button.active {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
 .btn-danger,
 .btn-submit-danger {
   background: var(--primary);
