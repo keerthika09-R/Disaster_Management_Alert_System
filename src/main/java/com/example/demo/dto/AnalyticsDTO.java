@@ -3,28 +3,28 @@ package com.example.demo.dto;
 import java.util.Map;
 
 public class AnalyticsDTO {
-    private long totalFloods;
-    private long totalFires;
+    private long disastersHandledThisMonth;
+    private long disastersHandledThisYear;
     private long avgResponseTimeMinutes;
     private long totalRespondersDeployed;
     private Map<String, Long> alertsByRegion;
     private long alertsBroadcasted;
     private long alertsAcknowledged;
 
-    public long getTotalFloods() {
-        return totalFloods;
+    public long getDisastersHandledThisMonth() {
+        return disastersHandledThisMonth;
     }
 
-    public void setTotalFloods(long totalFloods) {
-        this.totalFloods = totalFloods;
+    public void setDisastersHandledThisMonth(long disastersHandledThisMonth) {
+        this.disastersHandledThisMonth = disastersHandledThisMonth;
     }
 
-    public long getTotalFires() {
-        return totalFires;
+    public long getDisastersHandledThisYear() {
+        return disastersHandledThisYear;
     }
 
-    public void setTotalFires(long totalFires) {
-        this.totalFires = totalFires;
+    public void setDisastersHandledThisYear(long disastersHandledThisYear) {
+        this.disastersHandledThisYear = disastersHandledThisYear;
     }
 
     public long getAvgResponseTimeMinutes() {

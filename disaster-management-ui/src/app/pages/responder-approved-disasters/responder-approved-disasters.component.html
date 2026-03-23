@@ -40,6 +40,17 @@
                 <span><strong>Severity:</strong> <span class="text-danger">{{ disaster.severity || 'High' }}</span></span>
               </div>
             </div>
+            <div class="card-footer">
+              <button class="btn-primary" (click)="engageDisaster(disaster)" [disabled]="joiningDisasterId === disaster.id">
+                <ng-container *ngIf="getResponderTask(disaster.id); else joinLabel">
+                  Continue Mission
+                </ng-container>
+                <ng-template #joinLabel>
+                  {{ joiningDisasterId === disaster.id ? 'Joining...' : 'Engage Disaster' }}
+                </ng-template>
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
           </div>
         </div>
 

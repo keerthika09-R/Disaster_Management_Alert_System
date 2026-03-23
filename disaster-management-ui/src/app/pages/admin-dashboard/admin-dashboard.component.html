@@ -108,8 +108,10 @@
                 <div class="card-footer" *ngIf="req.status === 'PENDING_VERIFICATION'" style="flex-direction: column; gap: 10px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 0 0 14px 14px; margin: -20px; margin-top: 15px; border-top: 1px solid var(--border);">
                   <h4 style="color: #28a745; margin: 0; font-size: 1.1rem;"><i class="fas fa-clipboard-check"></i> Rescue Report Submitted</h4>
                   <p style="margin: 0; color: #444; font-size: 0.95rem;"><strong>Report:</strong> {{ req.reportText }}</p>
-                  <div *ngIf="req.reportImageUrl" style="margin-top: 5px;">
-                    <img [src]="req.reportImageUrl" style="max-width: 100%; border-radius: 8px; border: 1px solid #ddd;" alt="Rescue Proof">
+                  <div *ngIf="resolveReportImageUrl(req.reportImageUrl) as rescueImageUrl" style="margin-top: 5px;">
+                    <a [href]="rescueImageUrl" target="_blank" rel="noopener noreferrer" style="display: inline-block;">
+                      <img [src]="rescueImageUrl" style="max-width: 100%; border-radius: 8px; border: 1px solid #ddd;" alt="Rescue Proof">
+                    </a>
                   </div>
                   <button class="btn btn-success" (click)="verifyHelpRequest(req.id)" style="width: 100%; justify-content: center; margin-top: 10px; background: #2aa15c; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: 600;">
                     <i class="fas fa-check-double"></i> Verify and Mark Resolved
@@ -164,7 +166,12 @@
                         <i class="fas fa-file-medical-alt"></i> Latest situational report
                       </div>
                       <p>{{ disaster.latestReport.reportText }}</p>
-                      <img *ngIf="disaster.latestReport.imageUrl" [src]="disaster.latestReport.imageUrl" alt="Incident Report Image" style="max-width: 100%; border-radius: 8px; margin-top: 10px; max-height: 200px; object-fit: cover;" />
+                      <a *ngIf="resolveReportImageUrl(disaster.latestReport.imageUrl) as liveImageUrl" [href]="liveImageUrl" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 10px;">
+                        <img [src]="liveImageUrl" alt="Incident Report Image" style="max-width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover;" />
+                      </a>
+                      <a *ngIf="resolveReportImageUrl(disaster.latestReport.imageUrl) as liveImageLink" [href]="liveImageLink" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 8px; color: #2563eb; font-weight: 600; text-decoration: none;">
+                        Open image
+                      </a>
                       <small style="display: block; margin-top: 10px;">
                         {{ disaster.reportCount }} report{{ disaster.reportCount === 1 ? '' : 's' }} received
                         • {{ disaster.latestReport.timestamp | date:'medium' }}
@@ -289,7 +296,12 @@
                         <i class="fas fa-file-medical-alt"></i> Final update
                       </div>
                       <p>{{ disaster.latestReport.reportText }}</p>
-                      <img *ngIf="disaster.latestReport.imageUrl" [src]="disaster.latestReport.imageUrl" alt="Incident Report Image" style="max-width: 100%; border-radius: 8px; margin-top: 10px; max-height: 150px; object-fit: cover;" />
+                      <a *ngIf="resolveReportImageUrl(disaster.latestReport.imageUrl) as historyImageUrl" [href]="historyImageUrl" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 10px;">
+                        <img [src]="historyImageUrl" alt="Incident Report Image" style="max-width: 100%; border-radius: 8px; max-height: 150px; object-fit: cover;" />
+                      </a>
+                      <a *ngIf="resolveReportImageUrl(disaster.latestReport.imageUrl) as historyImageLink" [href]="historyImageLink" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 8px; color: #2563eb; font-weight: 600; text-decoration: none;">
+                        Open image
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -311,22 +323,22 @@
               <div class="kpi-card">
                 <div class="kpi-icon water"><i class="fas fa-water"></i></div>
                 <div class="kpi-data">
-                  <span class="kpi-label">TOTAL FLOODS</span>
-                  <span class="kpi-value">{{ analyticsData?.totalFloods || 0 }}</span>
+                  <span class="kpi-label">HANDLED THIS MONTH</span>
+                  <span class="kpi-value">{{ analyticsData?.disastersHandledThisMonth || 0 }}</span>
                 </div>
               </div>
               <div class="kpi-card">
                 <div class="kpi-icon fire"><i class="fas fa-fire-alt"></i></div>
                 <div class="kpi-data">
-                  <span class="kpi-label">FIRES SUPPRESSED</span>
-                  <span class="kpi-value">{{ analyticsData?.totalFires || 0 }}</span>
+                  <span class="kpi-label">HANDLED THIS YEAR</span>
+                  <span class="kpi-value">{{ analyticsData?.disastersHandledThisYear || 0 }}</span>
                 </div>
               </div>
               <div class="kpi-card">
                 <div class="kpi-icon time"><i class="fas fa-stopwatch"></i></div>
                 <div class="kpi-data">
                   <span class="kpi-label">AVG. RESPONSE</span>
-                  <span class="kpi-value">{{ analyticsData?.avgResponseTimeMinutes || 0 }} mins</span>
+                  <span class="kpi-value">{{ analyticsData?.avgResponseTimeMinutes && analyticsData!.avgResponseTimeMinutes > 0 ? (analyticsData!.avgResponseTimeMinutes + ' mins') : 'No data yet' }}</span>
                 </div>
               </div>
               <div class="kpi-card">
@@ -410,7 +422,7 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let record of resolvedDisasters" class="table-row-modern hover-bounce">
-                      <td class="td-date">{{ record.updatedAt | date:'medium' }}</td>
+                      <td class="td-date">{{ (record.resolvedAt || record.createdAt) | date:'medium' }}</td>
                       <td class="td-type"><span class="type-pill">{{ record.disasterType }}</span></td>
                       <td class="td-location">{{ record.location }}</td>
                       <td><span class="modern-badge" [ngClass]="getSeverityBadgeClass(record.severity)">{{ record.severity }}</span></td>

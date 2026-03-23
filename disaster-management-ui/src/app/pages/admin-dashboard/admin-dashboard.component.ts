@@ -10,8 +10,8 @@ import { IncidentReportService } from '../../core/services/incident-report.servi
 import { UserService } from '../../core/services/user.service'; // Added UserService
 
 export interface AnalyticsData {
-  totalFloods: number;
-  totalFires: number;
+  disastersHandledThisMonth: number;
+  disastersHandledThisYear: number;
   avgResponseTimeMinutes: number;
   totalRespondersDeployed: number;
   alertsByRegion: { [key: string]: number };
@@ -27,6 +27,7 @@ export interface AnalyticsData {
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
+  private backendBaseUrl = 'http://localhost:8082';
 
   pendingDisasters: any[] = [];
   verifiedDisasters: any[] = [];
@@ -244,6 +245,26 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       case 'low': return 'badge-low';
       default: return 'badge-low';
     }
+  }
+
+  resolveReportImageUrl(imageUrl?: string | null): string | null {
+    if (!imageUrl) {
+      return null;
+    }
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+
+    if (imageUrl.startsWith('/')) {
+      return `${this.backendBaseUrl}${imageUrl}`;
+    }
+
+    if (imageUrl.includes('uploads/incident-reports')) {
+      return `${this.backendBaseUrl}/${imageUrl.replace(/^\/+/, '')}`;
+    }
+
+    return imageUrl;
   }
 
   decorateDisasters(disasters: any[] = []): any[] {

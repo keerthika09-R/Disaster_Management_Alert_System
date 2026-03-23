@@ -241,6 +241,36 @@
     resize: vertical;
 }
 
+.file-hint {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted, #6B7280);
+    font-size: 0.9rem;
+}
+
+.image-preview {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--border, #E3F2E8);
+    border-radius: 10px;
+    background: var(--bg-app, #F4FBF7);
+}
+
+.image-preview p {
+    margin: 0 0 10px;
+    font-weight: 600;
+    color: var(--text-main, #1F2937);
+}
+
+.image-preview img {
+    width: 100%;
+    max-width: 320px;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+}
+
 .btn-info {
     background: #3b82f6;
     color: white;

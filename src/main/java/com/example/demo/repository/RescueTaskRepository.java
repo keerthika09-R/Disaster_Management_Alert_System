@@ -11,4 +11,6 @@ public interface RescueTaskRepository extends JpaRepository<RescueTask, Long> {
     List<RescueTask> findByResponderId(Long responderId);
 
     List<RescueTask> findByDisasterEventId(Long disasterEventId);
+
+    java.util.Optional<RescueTask> findByDisasterEventIdAndResponderId(Long disasterEventId, Long responderId);
 }

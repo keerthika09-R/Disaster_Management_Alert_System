@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { NavbarComponent } from '../../shared/navbar.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,10 +13,13 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './responder-task-details.component.html',
   styleUrls: ['./responder-task-details.component.css']
 })
-export class ResponderTaskDetailsComponent implements OnInit {
+export class ResponderTaskDetailsComponent implements OnInit, OnDestroy {
   task: any = null;
-  reportObj: any = { text: '', imageUrl: '' };
+  reportObj: any = { text: '' };
   isLoading = true;
+  selectedImageFile: File | null = null;
+  selectedImageName = '';
+  imagePreviewUrl: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -70,7 +73,7 @@ export class ResponderTaskDetailsComponent implements OnInit {
       alert('Report text is required');
       return;
     }
-    if (!this.reportObj.imageUrl) {
+    if (!this.selectedImageFile) {
       alert('Image evidence is required to complete the mission');
       return;
     }
@@ -78,17 +81,56 @@ export class ResponderTaskDetailsComponent implements OnInit {
     const reportData = {
       rescueTaskId: this.task.id,
       reportText: this.reportObj.text,
-      imageUrl: this.reportObj.imageUrl
+      imageFile: this.selectedImageFile
     };
     this.incidentReportService.submitReport(reportData).subscribe({
       next: () => {
         alert('Incident report submitted successfully');
-        this.reportObj = { text: '', imageUrl: '' };
+        this.reportObj = { text: '' };
+        this.clearSelectedImage();
         // Now automatically complete the mission
         this.updateStatus('COMPLETED');
       },
       error: () => alert('Failed to submit report')
     });
+  }
+
+  ngOnDestroy() {
+    this.clearSelectedImage();
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+
+    if (!file) {
+      this.clearSelectedImage();
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      input.value = '';
+      this.clearSelectedImage();
+      return;
+    }
+
+    this.selectedImageFile = file;
+    this.selectedImageName = file.name;
+
+    if (this.imagePreviewUrl) {
+      URL.revokeObjectURL(this.imagePreviewUrl);
+    }
+    this.imagePreviewUrl = URL.createObjectURL(file);
+  }
+
+  clearSelectedImage() {
+    this.selectedImageFile = null;
+    this.selectedImageName = '';
+    if (this.imagePreviewUrl) {
+      URL.revokeObjectURL(this.imagePreviewUrl);
+      this.imagePreviewUrl = null;
+    }
   }
 
   goBack() {

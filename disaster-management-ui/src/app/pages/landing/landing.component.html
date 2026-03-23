@@ -1,212 +1,108 @@
 <!-- HEADER -->
 <header class="header">
-  ⚠ SYSTEM ADVISORY: Monitoring active | Satellite links operational | No immediate threat
+  SYSTEM ADVISORY: Monitoring active | Satellite links operational | No immediate threat
 </header>
-
 
 <!-- NAVBAR -->
 <nav class="navbar">
-
   <div class="nav-left">
-
-    <button class="menu-toggle" (click)="toggleSidebar()">
-      ☰
-    </button>
-
     <div class="logo">
       Disaster Management & Alert System
     </div>
-
   </div>
 
-
   <div class="nav-links">
-
-    <a routerLink="/">Home</a>
-
-    <a>Live Maps</a>
-
-    <a>Alert History</a>
-
     <a routerLink="/login" class="login-btn">
       Login
     </a>
-
   </div>
-
 </nav>
-
-
 
 <!-- MAIN CONTAINER -->
 <div class="container">
-
-
-  <!-- SIDEBAR -->
-  <aside class="sidemenu" [class.closed]="!sidebarOpen">
-
-    <h3 *ngIf="sidebarOpen">System Menu</h3>
-
-    <a>
-      <span *ngIf="sidebarOpen">Dashboard Preview</span>
-    </a>
-
-    <a>
-      <span *ngIf="sidebarOpen">Live Monitoring</span>
-    </a>
-
-    <a>
-      <span *ngIf="sidebarOpen">Satellite Feed</span>
-    </a>
-
-    <a>
-      <span *ngIf="sidebarOpen">Emergency Contacts</span>
-    </a>
-
-    <a>
-      <span *ngIf="sidebarOpen">System Info</span>
-    </a>
-
-  </aside>
-
-
-
   <!-- MAIN BODY -->
   <main class="main">
-
-
     <!-- HERO SECTION -->
     <section class="hero">
-
       <div class="hero-overlay">
-
         <h1>Global Monitoring Active</h1>
 
         <p>
           Real-time intelligence for disaster mitigation and response coordination
         </p>
-
       </div>
-
     </section>
-
-
 
     <!-- DASHBOARD CARDS -->
     <section class="dashboard">
-
       <div class="card">
-
-        <div class="icon">🌊</div>
-
+        <div class="icon">Flood</div>
         <h3>Flood Analysis</h3>
-
         <p>Water levels stable across monitored regions</p>
-
         <span class="status green">STABLE</span>
-
       </div>
 
-
       <div class="card">
-
-        <div class="icon">🌋</div>
-
+        <div class="icon">Seismic</div>
         <h3>Seismic Activity</h3>
-
         <p>No significant earthquake activity detected</p>
-
         <span class="status green">STABLE</span>
-
       </div>
 
-
       <div class="card">
-
-        <div class="icon">🌪</div>
-
+        <div class="icon">Storm</div>
         <h3>Storm Tracking</h3>
-
         <p>Weather systems under surveillance</p>
-
         <span class="status orange">WATCH</span>
-
       </div>
-
 
       <div class="card">
-
-        <div class="icon">📡</div>
-
+        <div class="icon">Satellite</div>
         <h3>Satellite Connection</h3>
-
         <p>Satellite network fully operational</p>
-
         <span class="status green">ACTIVE</span>
-
       </div>
-
     </section>
-
-
 
     <!-- SATELLITE SECTION -->
     <section class="satellite-container">
-
       <div class="satellite-box">
-
         <h2>LIVE SATELLITE MONITORING SYSTEM</h2>
 
         <p>
           Integrated satellite feeds provide real-time disaster intelligence and monitoring.
         </p>
-
       </div>
-
     </section>
-
-
 
     <!-- INFO GRID -->
     <section class="info-grid">
-
-
       <div class="info-card">
-
         <h3>About the System</h3>
 
         <p>
           Advanced disaster management platform providing early warning, monitoring,
           and emergency coordination services globally.
         </p>
-
       </div>
 
-
       <div class="info-card">
-
         <h3>Live Global Map</h3>
 
         <iframe
           src="https://maps.google.com/maps?q=India&t=&z=4&ie=UTF8&iwloc=&output=embed">
         </iframe>
-
       </div>
 
-
       <div class="info-card">
-
         <h3>Emergency Contacts</h3>
 
         <p>Police: 100</p>
         <p>Ambulance: 108</p>
         <p>Fire: 101</p>
-
       </div>
 
-
       <div class="info-card">
-
         <h3>System Access</h3>
 
         <button routerLink="/login" class="tool-btn">
@@ -216,17 +112,11 @@
         <button routerLink="/register" class="tool-btn">
           Create New Account
         </button>
-
       </div>
-
-
     </section>
-
-
 
     <!-- SYSTEM FOOTER -->
     <section class="system-footer">
-
       <div>
         Disaster Management & Alert System © 2026
       </div>
@@ -234,20 +124,11 @@
       <div>
         Emergency Hotlines: 112 | 108 | 100
       </div>
-
     </section>
-
-
   </main>
-
-
 </div>
-
-
 
 <!-- FOOTER -->
 <footer class="footer">
-
   Disaster Management & Alert System © 2026
-
 </footer>

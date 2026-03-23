@@ -1,22 +1,11 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css']
 })
-export class LandingComponent {
-
-  sidebarOpen = true;
-
-  constructor() {}
-
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
-}
+export class LandingComponent {}

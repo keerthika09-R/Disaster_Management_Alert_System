@@ -81,9 +81,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Image Evidence URL (Required to complete)</label>
-                    <input type="text" [(ngModel)]="reportObj.imageUrl" name="imageUrl"
-                        placeholder="https://example.com/damage.jpg" required />
+                    <label>Image Evidence (Required to complete)</label>
+                    <input type="file" accept="image/*" name="imageFile" (change)="onImageSelected($event)" required />
+                    <small class="file-hint">Upload a local photo from the incident site. JPG, PNG, and other image formats are supported.</small>
+                    <div class="image-preview" *ngIf="imagePreviewUrl">
+                        <p>Selected: {{ selectedImageName }}</p>
+                        <img [src]="imagePreviewUrl" alt="Selected incident evidence preview" />
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-success">

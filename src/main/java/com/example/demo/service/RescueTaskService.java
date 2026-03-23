@@ -25,6 +25,18 @@ public class RescueTaskService {
     private UserRepository userRepository;
 
     public RescueTask assignTask(RescueTaskDTO dto) {
+        RescueTask existingTask = rescueTaskRepository
+                .findByDisasterEventIdAndResponderId(dto.getDisasterEventId(), dto.getResponderId())
+                .orElse(null);
+
+        if (existingTask != null) {
+            if (dto.getDescription() != null && !dto.getDescription().isBlank()) {
+                existingTask.setDescription(dto.getDescription());
+                return rescueTaskRepository.save(existingTask);
+            }
+            return existingTask;
+        }
+
         RescueTask task = new RescueTask();
 
         DisasterEvent event = disasterRepository.findById(dto.getDisasterEventId())

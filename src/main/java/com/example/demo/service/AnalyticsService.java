@@ -10,6 +10,7 @@ import com.example.demo.repository.RescueTaskRepository;
 import com.example.demo.repository.AlertAcknowledgmentRepository;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,23 +31,23 @@ public class AnalyticsService {
         AnalyticsDTO dto = new AnalyticsDTO();
         
         List<DisasterEvent> allDisasters = disasterRepository.findAll();
-        
-        // Count Floods Handled
-        long floods = allDisasters.stream()
-            .filter(d -> d.getDisasterType() != null && d.getDisasterType().equalsIgnoreCase("Flood"))
-            .count();
-        dto.setTotalFloods(floods);
-
-        // Count Fires Suppressed
-        long fires = allDisasters.stream()
-            .filter(d -> d.getDisasterType() != null && d.getDisasterType().equalsIgnoreCase("Fire"))
-            .count();
-        dto.setTotalFires(fires);
 
         // Compute average response time in minutes
         List<DisasterEvent> resolvedEvents = allDisasters.stream()
             .filter(d -> "RESOLVED".equalsIgnoreCase(d.getStatus()) && d.getResolvedAt() != null && d.getCreatedAt() != null)
             .collect(Collectors.toList());
+
+        LocalDate today = LocalDate.now();
+        long handledThisMonth = resolvedEvents.stream()
+            .filter(event -> event.getResolvedAt().getYear() == today.getYear()
+                && event.getResolvedAt().getMonthValue() == today.getMonthValue())
+            .count();
+        dto.setDisastersHandledThisMonth(handledThisMonth);
+
+        long handledThisYear = resolvedEvents.stream()
+            .filter(event -> event.getResolvedAt().getYear() == today.getYear())
+            .count();
+        dto.setDisastersHandledThisYear(handledThisYear);
 
         if (!resolvedEvents.isEmpty()) {
             long totalMinutes = 0;

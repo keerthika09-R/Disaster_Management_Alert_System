@@ -10,8 +10,12 @@ export class IncidentReportService {
 
     constructor(private http: HttpClient) { }
 
-    submitReport(reportData: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/submit`, reportData);
+    submitReport(reportData: { rescueTaskId: number; reportText: string; imageFile: File }): Observable<any> {
+        const formData = new FormData();
+        formData.append('rescueTaskId', reportData.rescueTaskId.toString());
+        formData.append('reportText', reportData.reportText);
+        formData.append('imageFile', reportData.imageFile);
+        return this.http.post(`${this.apiUrl}/submit`, formData);
     }
 
     getReportsByTask(taskId: number): Observable<any[]> {
